@@ -1,48 +1,15 @@
-# Escala de Hora Extra — Site v2
+# Escala de Hora Extra — execução local
 
-## Executar
+## Abrir corretamente no Windows
 
-Abra `index.html` diretamente ou publique a pasta no Vercel/Netlify/GitHub Pages.
-O site funciona imediatamente no modo local, sem Firebase.
+1. Extraia todo o ZIP.
+2. Entre na pasta `escala-hora-extra-v2-localhost`.
+3. Clique duas vezes em `iniciar-site.bat`.
+4. O navegador abrirá em `http://localhost:5500`.
+5. Mantenha a janela preta/PowerShell aberta enquanto estiver usando o site.
 
-## Sincronizar entre máquinas
+Não abra `index.html` diretamente. Endereços `file:///` têm restrições de segurança e podem impedir o carregamento dos scripts e da sincronização.
 
-1. Crie um projeto no Firebase.
-2. Abra **Realtime Database** e crie o banco.
-3. Durante os testes, use regras que permitam leitura e gravação para a equipe. Depois, proteja o banco com autenticação.
-4. Copie as credenciais do aplicativo Web para `firebase-config.js`.
-5. Informe principalmente `apiKey`, `databaseURL`, `projectId`, `authDomain` e `appId`.
-6. Publique novamente o site.
+## Publicar
 
-Exemplo de regras apenas para teste:
-
-```json
-{
-  "rules": {
-    "escala": {
-      "$workspace": {
-        ".read": true,
-        ".write": true
-      }
-    }
-  }
-}
-```
-
-> Essas regras deixam os dados acessíveis a quem conhecer o endereço do banco. Para uso permanente, configure Firebase Authentication.
-
-## Recursos
-
-- Calendário mensal.
-- Rodízio automático em dias úteis.
-- Edição individual por data.
-- Opção “Sem hora extra”.
-- Equipe personalizável.
-- Cor individual por integrante.
-- Histórico de alterações.
-- Tema claro e escuro.
-- Armazenamento local com sincronização opcional via Firebase.
-
-
-## Correção para abrir direto
-Esta versão não usa scripts do tipo module. Portanto, pode ser aberta dando dois cliques no `index.html`. Para uma experiência mais próxima da publicação real, também é possível usar a extensão Live Server do VS Code ou publicar no Vercel.
+Também é possível enviar esta pasta para Vercel, Netlify ou GitHub Pages. Nesse caso, o site funcionará por HTTPS e o arquivo `iniciar-site.bat` não será necessário.

@@ -2,7 +2,7 @@ const STORAGE_KEY = 'escalaHoraExtraV2';
 
 function createId() {
   if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-    return window.createId();
+    return window.crypto.randomUUID();
   }
   return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 }

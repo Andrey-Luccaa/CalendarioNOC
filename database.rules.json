@@ -1,8 +1,0 @@
-{
-  "rules": {
-    "escalaHoraExtra": {
-      ".read": true,
-      ".write": "auth != null && auth.token.email == 'andreyluccadantas@gmail.com'"
-    }
-  }
-}

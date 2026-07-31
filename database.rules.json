@@ -2,7 +2,7 @@
   "rules": {
     "escalaHoraExtra": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'SEU_EMAIL@gmail.com'"
+      ".write": "auth != null && auth.token.email == 'andreyluccadantas@gmail.com'"
     }
   }
 }

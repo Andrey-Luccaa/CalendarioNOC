@@ -12,7 +12,7 @@ window.APP_CONFIG = {
 
   // E-mail Google autorizado a editar a escala.
   // Deve ser exatamente o mesmo e-mail cadastrado nas regras do Firebase.
-  adminEmail: "SEU_EMAIL@gmail.com",
+  adminEmail: "andreyluccadantas@gmail.com",
 
   // Caminho usado no Realtime Database.
   databasePath: "escalaHoraExtra"

@@ -1,28 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#071322" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071524">
   <title>Escala de Hora Extra</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-icon" aria-hidden="true">▣</div>
-        <div>
-          <h1>Escala de Hora Extra</h1>
-          <p>Calendário compartilhado da equipe</p>
-        </div>
+        <div class="brand-icon">▣</div>
+        <div><h1>Escala de Hora Extra</h1><p>Calendário compartilhado da equipe</p></div>
       </div>
       <div class="top-actions">
-        <span id="syncStatus" class="sync-status"><span class="sync-dot"></span> Local</span>
-        <button id="openSettingsBtn" class="icon-btn" title="Configurações" aria-label="Configurações">⚙</button>
-        <button id="themeBtn" class="icon-btn" title="Alternar tema" aria-label="Alternar tema">◐</button>
+        <span id="syncStatus" class="sync-status"><span class="sync-dot"></span> Iniciando</span>
+        <span id="accessBadge" class="access-badge">Visitante</span>
+        <button id="loginBtn" class="login-btn">Entrar para editar</button>
+        <button id="logoutBtn" class="icon-btn hidden" title="Sair">↪</button>
+        <button id="themeBtn" class="icon-btn" title="Alternar tema">◐</button>
       </div>
     </header>
+
+    <div id="setupBanner" class="setup-banner hidden">
+      O Firebase ainda não foi configurado. O site está em modo local de demonstração. Veja o README para ativar compartilhamento e acesso administrativo.
+    </div>
 
     <main class="layout">
       <aside class="sidebar">
@@ -31,130 +34,115 @@
           <strong id="todayDate">—</strong>
           <div id="todayColor" class="today-line"></div>
           <h2 id="todayPerson">—</h2>
-          <p id="todayStatus">Hora extra</p>
+          <p id="todayStatus">—</p>
         </section>
 
         <section class="card">
-          <div class="card-title-row">
-            <span class="card-title">ORDEM DO RODÍZIO</span>
-            <button id="manageTeamBtn" class="mini-btn" title="Editar equipe">✎</button>
-          </div>
+          <div class="card-title-row"><span class="card-title">RODÍZIO SEMANAL</span></div>
           <div id="rotationList" class="rotation-list"></div>
+        </section>
+
+        <section class="card">
+          <span class="card-title">SÁBADOS</span>
+          <div id="saturdaySummary" class="saturday-summary"></div>
         </section>
 
         <section class="card">
           <span class="card-title">LEGENDA</span>
           <div id="legendList" class="legend-list"></div>
           <div class="legend-item"><span class="legend-dash no-extra"></span><span>Sem hora extra</span></div>
-          <div class="legend-item"><span class="legend-dash weekend"></span><span>Fim de semana</span></div>
         </section>
 
         <button id="historyBtn" class="wide-btn">⇄ Ver histórico</button>
-        <button id="manageTeamBtn2" class="wide-btn">♙ Gerenciar equipe</button>
+        <button id="manageTeamBtn" class="wide-btn admin-only">⚙ Gerenciar escala</button>
       </aside>
 
       <section class="calendar-area">
         <div class="calendar-toolbar">
-          <button id="prevMonthBtn" class="nav-btn" aria-label="Mês anterior">‹</button>
+          <button id="prevMonthBtn" class="nav-btn">‹</button>
           <h2 id="monthTitle">—</h2>
-          <div class="toolbar-right">
-            <button id="nextMonthBtn" class="nav-btn" aria-label="Próximo mês">›</button>
-            <button id="todayBtn" class="today-btn">Hoje</button>
-          </div>
+          <div class="toolbar-right"><button id="nextMonthBtn" class="nav-btn">›</button><button id="todayBtn" class="today-btn">Hoje</button></div>
         </div>
-
         <div class="calendar-card">
-          <div class="weekdays">
-            <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
-          </div>
+          <div class="weekdays"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
           <div id="calendarGrid" class="calendar-grid"></div>
         </div>
-        <p class="calendar-tip">ⓘ Clique em um dia para editar ou ver detalhes</p>
+        <p id="calendarTip" class="calendar-tip">Clique em um dia para ver os detalhes</p>
       </section>
     </main>
-
-    <footer class="footer">
-      <div>▣ Rodízio iniciado em <strong id="startDateLabel">—</strong></div>
-      <div id="footerLegend" class="footer-legend"></div>
-    </footer>
   </div>
 
   <div id="dayModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop" data-close-modal="dayModal"></div>
+    <div class="modal-backdrop" data-close="dayModal"></div>
     <div class="modal-panel">
-      <button class="modal-close" data-close-modal="dayModal">×</button>
-      <span class="eyebrow">EDITAR DIA</span>
+      <button class="modal-close" data-close="dayModal">×</button>
+      <span class="eyebrow">DETALHES DO DIA</span>
       <h2 id="dayModalTitle">—</h2>
       <form id="dayForm">
-        <input id="selectedDate" type="hidden" />
-        <label>Status do dia</label>
-        <div class="segmented">
-          <label><input type="radio" name="dayStatus" value="extra" checked /><span>Hora extra</span></label>
-          <label><input type="radio" name="dayStatus" value="none" /><span>Sem hora extra</span></label>
+        <input id="selectedDate" type="hidden">
+        <div id="dayReadOnly" class="day-readonly"></div>
+        <div id="dayEditFields" class="admin-only">
+          <label>Status do dia</label>
+          <div class="segmented">
+            <label><input type="radio" name="dayStatus" value="extra" checked><span>Hora extra</span></label>
+            <label><input type="radio" name="dayStatus" value="none"><span>Sem hora extra</span></label>
+          </div>
+          <div id="peopleField">
+            <label>Responsável(is)</label>
+            <div id="peopleChoices" class="people-choices"></div>
+          </div>
+          <label for="dayNote">Observação</label>
+          <textarea id="dayNote" rows="3" placeholder="Ex.: troca combinada entre a equipe"></textarea>
         </div>
-        <div id="personField">
-          <label for="personSelect">Responsável</label>
-          <select id="personSelect"></select>
-        </div>
-        <label for="dayNote">Observação</label>
-        <textarea id="dayNote" rows="3" placeholder="Ex.: troca combinada entre a equipe"></textarea>
         <div class="modal-actions">
-          <button type="button" id="restoreDayBtn" class="danger-ghost">Restaurar rodízio</button>
-          <button type="submit" class="primary-btn">Salvar alteração</button>
+          <button type="button" id="restoreDayBtn" class="danger-ghost admin-only">Restaurar automático</button>
+          <button type="submit" id="saveDayBtn" class="primary-btn admin-only">Salvar alteração</button>
+          <button type="button" class="ghost-btn visitor-close" data-close="dayModal">Fechar</button>
         </div>
       </form>
     </div>
   </div>
 
   <div id="teamModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop" data-close-modal="teamModal"></div>
+    <div class="modal-backdrop" data-close="teamModal"></div>
     <div class="modal-panel large">
-      <button class="modal-close" data-close-modal="teamModal">×</button>
-      <span class="eyebrow">CONFIGURAÇÕES</span>
-      <h2>Gerenciar equipe</h2>
-      <p class="muted">A ordem abaixo define o rodízio automático. Escolha uma cor diferente para cada integrante.</p>
+      <button class="modal-close" data-close="teamModal">×</button>
+      <span class="eyebrow">CONFIGURAÇÕES</span><h2>Gerenciar escala</h2>
+      <p class="muted">A ordem define o rodízio de segunda a sexta. Cada integrante pode ter sua própria cor.</p>
       <div id="teamEditor" class="team-editor"></div>
-      <button id="addMemberBtn" class="add-member-btn">＋ Adicionar integrante</button>
+      <button id="addMemberBtn" class="add-member-btn" type="button">＋ Adicionar integrante</button>
       <div class="settings-grid">
-        <label>Data de início do rodízio<input id="rotationStartInput" type="date" /></label>
+        <label>Início do rodízio semanal<input id="rotationStartInput" type="date"></label>
         <label>Primeiro responsável<select id="rotationFirstSelect"></select></label>
       </div>
-      <div class="modal-actions end">
-        <button data-close-modal="teamModal" class="ghost-btn">Cancelar</button>
-        <button id="saveTeamBtn" class="primary-btn">Salvar equipe</button>
+      <h3 class="section-heading">Rodízio dos sábados</h3>
+      <div class="settings-grid">
+        <label>Primeiro sábado da sequência<input id="saturdayStartInput" type="date"></label>
       </div>
+      <div class="saturday-groups">
+        <div><strong>Grupo A — primeiro sábado</strong><div id="saturdayGroupA" class="group-checkboxes"></div></div>
+        <div><strong>Grupo B — sábado seguinte</strong><div id="saturdayGroupB" class="group-checkboxes"></div></div>
+      </div>
+      <div class="modal-actions end"><button class="ghost-btn" data-close="teamModal" type="button">Cancelar</button><button id="saveTeamBtn" class="primary-btn" type="button">Salvar configurações</button></div>
     </div>
   </div>
 
   <div id="historyModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop" data-close-modal="historyModal"></div>
+    <div class="modal-backdrop" data-close="historyModal"></div>
     <div class="modal-panel large">
-      <button class="modal-close" data-close-modal="historyModal">×</button>
-      <span class="eyebrow">ALTERAÇÕES</span>
-      <h2>Histórico da escala</h2>
+      <button class="modal-close" data-close="historyModal">×</button>
+      <span class="eyebrow">ALTERAÇÕES</span><h2>Histórico da escala</h2>
       <div id="historyList" class="history-list"></div>
-      <div class="modal-actions end">
-        <button id="clearHistoryBtn" class="danger-ghost">Limpar histórico</button>
-        <button data-close-modal="historyModal" class="primary-btn">Fechar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="settingsModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop" data-close-modal="settingsModal"></div>
-    <div class="modal-panel">
-      <button class="modal-close" data-close-modal="settingsModal">×</button>
-      <span class="eyebrow">SINCRONIZAÇÃO</span>
-      <h2>Configuração online</h2>
-      <p class="muted">O site funciona localmente sem configuração. Para compartilhar em várias máquinas, preencha o Firebase em <code>firebase-config.js</code>.</p>
-      <div id="cloudInfo" class="cloud-info"></div>
-      <div class="modal-actions end"><button data-close-modal="settingsModal" class="primary-btn">Entendi</button></div>
+      <div class="modal-actions end"><button id="clearHistoryBtn" class="danger-ghost admin-only">Limpar histórico</button><button class="primary-btn" data-close="historyModal">Fechar</button></div>
     </div>
   </div>
 
   <div id="toast" class="toast"></div>
 
   <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
   <script defer src="js/app.js"></script>
 </body>
 </html>

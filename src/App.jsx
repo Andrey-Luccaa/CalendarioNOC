@@ -40,7 +40,8 @@ const defaults = {
   weekdayStart: '2026-08-03',
   weekdayFirstId: 'andrey',
   saturdayStart: '2026-08-01',
-  saturdayGroups: [['andrey','vinicius'],['jonatas']],
+  saturdayGroupA: ['andrey','vinicius'],
+  saturdayGroupB: ['jonatas'],
   overrides: {},
   history: [],
 };
@@ -50,7 +51,20 @@ function mergeData(value) {
     ...defaults,
     ...(value || {}),
     team: Array.isArray(value?.team) && value.team.length ? value.team : defaults.team,
-    saturdayGroups: value?.saturdayGroups?.length === 2 ? value.saturdayGroups : defaults.saturdayGroups,
+    saturdayGroupA: Array.isArray(value?.saturdayGroupA)
+      ? value.saturdayGroupA
+      : Array.isArray(value?.saturdayGroups?.group1)
+        ? value.saturdayGroups.group1
+        : Array.isArray(value?.saturdayGroups?.[0])
+          ? value.saturdayGroups[0]
+          : defaults.saturdayGroupA,
+    saturdayGroupB: Array.isArray(value?.saturdayGroupB)
+      ? value.saturdayGroupB
+      : Array.isArray(value?.saturdayGroups?.group2)
+        ? value.saturdayGroups.group2
+        : Array.isArray(value?.saturdayGroups?.[1])
+          ? value.saturdayGroups[1]
+          : defaults.saturdayGroupB,
     overrides: value?.overrides || {},
     history: value?.history || [],
   };
@@ -80,7 +94,9 @@ function App() {
   async function persist(next, message='Alterações salvas') {
     if (!isAdmin) return setError('Somente o administrador pode editar.');
     try {
-      await setDoc(DOC_REF, {...next, updatedAt: serverTimestamp(), updatedBy: user.email}, {merge:false});
+      const clean = {...next};
+      delete clean.saturdayGroups;
+      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'4.2.0'}, {merge:false});
       setToast(message);
     } catch (err) { setError(err.message); }
   }
@@ -92,7 +108,7 @@ function App() {
     if (day === 6) {
       const start = parseKey(data.saturdayStart);
       const index = ((saturdaysBetween(start,date)%2)+2)%2;
-      const ids = data.saturdayGroups[index] || [];
+      const ids = index === 0 ? (data.saturdayGroupA || []) : (data.saturdayGroupB || []);
       return {kind:'extra', people:ids.map(id=>data.team.find(p=>p.id===id)).filter(Boolean)};
     }
     if (!isWeekday(date) || !active.length) return {kind:'off', people:[]};
@@ -126,7 +142,7 @@ function App() {
 
   return <Box className={dark ? 'app dark' : 'app light'}>
     <header>
-      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário compartilhado da equipe</Typography></Box>
+      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário compartilhado da equipe · v4.2</Typography></Box>
       <Stack direction="row" spacing={1} alignItems="center">
         <Chip label={loading?'Carregando...':'Atualização em tempo real'} color={loading?'default':'success'} variant="outlined" />
         <Tooltip title={dark?'Tema claro':'Tema escuro'}><IconButton onClick={()=>setDark(!dark)}>{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>
@@ -212,10 +228,10 @@ function TeamDialog({open,data,onClose,onSave}) {
 }
 
 function ConfigDialog({open,data,onClose,onSave}) {
- const [form,setForm]=useState({}); useEffect(()=>{if(open)setForm({weekdayStart:data.weekdayStart,weekdayFirstId:data.weekdayFirstId,saturdayStart:data.saturdayStart,saturdayGroups:data.saturdayGroups.map(g=>[...g])})},[open,data]);
- if(!form.saturdayGroups)return null;
- const setGroup=(idx,val)=>setForm({...form,saturdayGroups:form.saturdayGroups.map((g,i)=>i===idx?val:g)});
- return <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm"><DialogTitle>Configurar rodízio</DialogTitle><DialogContent><Stack spacing={2} mt={1}><TextField type="date" label="Data inicial — segunda a sexta" InputLabelProps={{shrink:true}} value={form.weekdayStart} onChange={e=>setForm({...form,weekdayStart:e.target.value})}/><Select value={form.weekdayFirstId} onChange={e=>setForm({...form,weekdayFirstId:e.target.value})}>{data.team.filter(p=>p.active).map(p=><MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}</Select><Divider/><TextField type="date" label="Primeiro sábado do ciclo" InputLabelProps={{shrink:true}} value={form.saturdayStart} onChange={e=>setForm({...form,saturdayStart:e.target.value})}/><Typography>Sábado A</Typography><Select multiple value={form.saturdayGroups[0]} onChange={e=>setGroup(0,e.target.value)}>{data.team.map(p=><MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}</Select><Typography>Sábado B</Typography><Select multiple value={form.saturdayGroups[1]} onChange={e=>setGroup(1,e.target.value)}>{data.team.map(p=><MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}</Select></Stack></DialogContent><DialogActions><Button onClick={onClose}>Cancelar</Button><Button variant="contained" onClick={()=>onSave(form)}>Salvar</Button></DialogActions></Dialog>
+ const [form,setForm]=useState({}); useEffect(()=>{if(open)setForm({weekdayStart:data.weekdayStart,weekdayFirstId:data.weekdayFirstId,saturdayStart:data.saturdayStart,saturdayGroupA:[...(data.saturdayGroupA||[])],saturdayGroupB:[...(data.saturdayGroupB||[])]})},[open,data]);
+ if(!form.saturdayGroupA || !form.saturdayGroupB)return null;
+ const setGroup=(group,val)=>setForm({...form,[group]:val});
+ return <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm"><DialogTitle>Configurar rodízio</DialogTitle><DialogContent><Stack spacing={2} mt={1}><TextField type="date" label="Data inicial — segunda a sexta" InputLabelProps={{shrink:true}} value={form.weekdayStart} onChange={e=>setForm({...form,weekdayStart:e.target.value})}/><Select value={form.weekdayFirstId} onChange={e=>setForm({...form,weekdayFirstId:e.target.value})}>{data.team.filter(p=>p.active).map(p=><MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}</Select><Divider/><TextField type="date" label="Primeiro sábado do ciclo" InputLabelProps={{shrink:true}} value={form.saturdayStart} onChange={e=>setForm({...form,saturdayStart:e.target.value})}/><Typography>Sábado A</Typography><Select multiple value={form.saturdayGroupA} onChange={e=>setGroup('saturdayGroupA',e.target.value)}>{data.team.map(p=><MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}</Select><Typography>Sábado B</Typography><Select multiple value={form.saturdayGroupB} onChange={e=>setGroup('saturdayGroupB',e.target.value)}>{data.team.map(p=><MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}</Select></Stack></DialogContent><DialogActions><Button onClick={onClose}>Cancelar</Button><Button variant="contained" onClick={()=>onSave(form)}>Salvar</Button></DialogActions></Dialog>
 }
 
 export default App;

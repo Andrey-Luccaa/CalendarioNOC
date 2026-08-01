@@ -14,6 +14,7 @@ export const firebaseConfig = {
 
 // TROQUE pelo e-mail Google que terá permissão de editar.
 export const ADMIN_EMAIL = 'andreyluccadantas@gmail.com';
+export const ADMIN_EMAIL = 'viniciusnex43@gmail.com';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

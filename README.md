@@ -1,4 +1,4 @@
-# Escala de Hora Extra — V7
+# Escala de Hora Extra — V8
 
 Versão React + Vite + Firebase com rodízio inteligente e interface dinâmica.
 
@@ -22,4 +22,4 @@ npm run dev
 
 ## Publicar no Vercel
 
-Envie todos os arquivos para o repositório e faça um novo deploy. Depois confirme que aparece `v7.0` abaixo do título.
+Envie todos os arquivos para o repositório e faça um novo deploy. Depois confirme que aparece `v8.0` abaixo do título.

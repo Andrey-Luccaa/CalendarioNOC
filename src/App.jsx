@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert, Avatar, Box, Button, Chip, Dialog, DialogActions, DialogContent,
-  DialogTitle, Divider, IconButton, MenuItem, Select, Snackbar, Stack,
+  DialogTitle, Divider, Drawer, IconButton, MenuItem, Select, Snackbar, Stack,
   Switch, TextField, Tooltip, Typography, ThemeProvider, createTheme, CssBaseline
 } from '@mui/material';
 import {
@@ -128,7 +128,7 @@ function App() {
     try {
       const clean = {...next};
       delete clean.saturdayGroups;
-      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'7.0.0'}, {merge:false});
+      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'8.0.0'}, {merge:false});
       setToast(message);
     } catch (err) { setError(err.message); }
   }
@@ -236,7 +236,7 @@ function App() {
 
   return <ThemeProvider theme={muiTheme}><CssBaseline/><Box className={dark ? 'app dark' : 'app light'}>
     <header>
-      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário inteligente da equipe · v7.0</Typography></Box>
+      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Painel inteligente da equipe · v8.0</Typography></Box>
       <Stack direction="row" spacing={1} alignItems="center">
         <Chip icon={<CheckCircle/>} label={loading?'Conectando...':'Sincronizado'} color={loading?'default':'success'} variant="outlined" />
         <Tooltip title={dark?'Ativar tema claro':'Ativar tema escuro'}><IconButton className="theme-toggle" onClick={()=>setDark(v=>!v)} aria-label="Alternar tema">{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>
@@ -318,12 +318,33 @@ function DayDialog({open,date,data,assignment,admin,onClose,onSave,onReset}) {
   const [kind,setKind]=useState('extra'); const [people,setPeople]=useState([]); const [note,setNote]=useState('');
   useEffect(()=>{ if(open&&assignment){setKind(assignment.kind==='none'?'none':'extra');setPeople(assignment.people.map(p=>p.id));setNote(assignment.note||'')} },[open,assignment]);
   const toggle=(id)=>setPeople(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);
-  return <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm"><DialogTitle>Escala de {date?ptDate(date):''}</DialogTitle><DialogContent>
-    {!admin&&<Alert severity="info" sx={{mb:2}}>Você está no modo de visualização.</Alert>}
-    <Typography gutterBottom fontWeight={800}>O que aconteceu neste dia?</Typography><Select fullWidth value={kind} onChange={e=>setKind(e.target.value)} disabled={!admin}><MenuItem value="extra">Hora extra realizada — avançar fila</MenuItem><MenuItem value="none">Sem hora extra — manter a vez</MenuItem></Select>
-    {kind==='none'&&<Alert severity="info" sx={{mt:2}}>A ordem não avançará. A mesma pessoa continuará no próximo dia útil.</Alert>}{kind==='extra'&&<><Typography mt={2} gutterBottom fontWeight={800}>Quem realizou a hora extra?</Typography><Stack direction="row" gap={1} flexWrap="wrap">{data.team.filter(p=>p.active).map(p=><Chip key={p.id} clickable disabled={!admin} onClick={()=>toggle(p.id)} label={p.name} variant={people.includes(p.id)?'filled':'outlined'} sx={people.includes(p.id)?{bgcolor:p.color,color:'#061018'}:{}}/>)}</Stack></>}
-    <TextField fullWidth multiline minRows={2} label="Observação" value={note} onChange={e=>setNote(e.target.value)} disabled={!admin} sx={{mt:2}}/>
-  </DialogContent><DialogActions><Button onClick={onClose}>Fechar</Button>{admin&&<Button startIcon={<RestartAlt/>} onClick={onReset}>Restaurar</Button>}{admin&&<Button variant="contained" startIcon={<Save/>} disabled={kind==='extra'&&!people.length} onClick={()=>onSave({kind,people:kind==='none'?[]:people,note})}>Salvar</Button>}</DialogActions></Dialog>
+  return <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{className:'day-drawer'}}>
+    <Box className="drawer-shell">
+      <Box className="drawer-head">
+        <Box><span className="eyebrow">EDITAR ESCALA</span><Typography variant="h5" fontWeight={900}>{date?ptDate(date):''}</Typography></Box>
+        <IconButton onClick={onClose}><Close/></IconButton>
+      </Box>
+      <Box className="drawer-content">
+        {!admin&&<Alert severity="info">Você está no modo de visualização.</Alert>}
+        <Box className="drawer-section">
+          <Typography fontWeight={900}>Status do dia</Typography>
+          <Box className="status-grid">
+            <button className={`status-card ${kind==='extra'?'active':''}`} disabled={!admin} onClick={()=>setKind('extra')}><CheckCircle/><strong>Hora extra realizada</strong><span>Avança a fila normalmente</span></button>
+            <button className={`status-card ${kind==='none'?'active':''}`} disabled={!admin} onClick={()=>setKind('none')}><DoNotDisturbAlt/><strong>Sem hora extra</strong><span>Mantém a vez para o próximo dia</span></button>
+          </Box>
+        </Box>
+        {kind==='extra'&&<Box className="drawer-section"><Typography fontWeight={900}>Quem realizou?</Typography><div className="people-grid">{data.team.filter(p=>p.active).map(p=><button key={p.id} disabled={!admin} onClick={()=>toggle(p.id)} className={`person-choice ${people.includes(p.id)?'selected':''}`} style={{'--person':p.color}}><Avatar sx={{bgcolor:p.color,width:38,height:38}}>{p.name[0]}</Avatar><span>{p.name}</span><CheckCircle className="check"/></button>)}</div></Box>}
+        {kind==='none'&&<Alert severity="info">A mesma pessoa ou grupo continuará como próximo responsável.</Alert>}
+        <Box className="drawer-section"><TextField fullWidth multiline minRows={4} label="Observação" placeholder="Ex.: equipe liberada no horário normal" value={note} onChange={e=>setNote(e.target.value)} disabled={!admin}/></Box>
+      </Box>
+      <Box className="drawer-actions">
+        {admin&&<Button startIcon={<RestartAlt/>} onClick={onReset}>Restaurar automático</Button>}
+        <Box sx={{flex:1}}/>
+        <Button onClick={onClose}>Cancelar</Button>
+        {admin&&<Button variant="contained" startIcon={<Save/>} disabled={kind==='extra'&&!people.length} onClick={()=>onSave({kind,people:kind==='none'?[]:people,note})}>Salvar alteração</Button>}
+      </Box>
+    </Box>
+  </Drawer>
 }
 
 function TeamDialog({open,data,onClose,onSave}) {

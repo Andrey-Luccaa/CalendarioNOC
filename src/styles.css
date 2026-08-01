@@ -52,3 +52,20 @@ aside{display:grid;align-content:start;gap:16px;position:sticky;top:18px}.panel{
 @media(max-width:1050px){main{grid-template-columns:1fr}aside{position:static;grid-template-columns:repeat(2,1fr)}.hero-panel{grid-column:1/-1}}
 @media(max-width:700px){.app{padding:10px}.app header{align-items:flex-start;flex-direction:column}.app header>div:last-child{width:100%;flex-wrap:wrap}.summary-strip{grid-template-columns:1fr}.summary-strip>div{border-right:0;border-bottom:1px solid var(--border)}.summary-strip>div:last-child{border-bottom:0}.day{min-height:92px;padding:6px}.event{font-size:9px;padding:5px}.weekdays div{font-size:10px;padding:9px 2px}aside{grid-template-columns:1fr}.calendar-toolbar{padding:12px 9px}.calendar-toolbar h5{font-size:18px}.calendar-card{border-radius:16px}.day.today:after{display:none}}
 @media(prefers-reduced-motion:reduce){.app,.app *{transition:none!important;animation:none!important}}
+
+/* V8 — painel lateral e interface dinâmica */
+.day-drawer{width:min(460px,100vw)!important;background:var(--card)!important;border-left:1px solid var(--border)!important;box-shadow:-30px 0 80px rgba(0,0,0,.45)!important}
+.drawer-shell{height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--card),var(--surface));color:var(--text)}
+.drawer-head{padding:24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--card-3),var(--card))}
+.drawer-content{padding:22px;display:grid;gap:20px;overflow:auto;flex:1}
+.drawer-section{display:grid;gap:12px;padding:18px;border:1px solid var(--border-soft);border-radius:18px;background:var(--card-2)}
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.status-card{min-height:128px;border-radius:16px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:16px;text-align:left;display:grid;align-content:start;gap:8px;cursor:pointer}
+.status-card svg{color:var(--accent)}.status-card span{font-size:12px;color:var(--muted);line-height:1.35}.status-card.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 12px 32px var(--glow);transform:translateY(-2px)}
+.people-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.person-choice{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:15px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;position:relative;overflow:hidden}
+.person-choice:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--person)}.person-choice .check{margin-left:auto;opacity:0;color:var(--person)}.person-choice.selected{border-color:var(--person);box-shadow:0 0 0 1px var(--person),0 10px 28px color-mix(in srgb,var(--person) 22%,transparent)}.person-choice.selected .check{opacity:1}
+.drawer-actions{padding:18px 22px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;background:var(--header)}
+.calendar-card{isolation:isolate}.day{will-change:transform}.day:hover .event{transform:translateX(3px)}
+.panel{position:relative;overflow:hidden}.panel:before{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-70px;top:-70px;background:var(--glow);filter:blur(25px);pointer-events:none}
+@media(max-width:600px){.day-drawer{width:100vw!important}.status-grid,.people-grid{grid-template-columns:1fr}.drawer-actions{flex-wrap:wrap}.drawer-actions .MuiButton-root{flex:1}.drawer-head,.drawer-content{padding:16px}}

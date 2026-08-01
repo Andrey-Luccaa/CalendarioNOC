@@ -72,6 +72,7 @@ function mergeData(value) {
 
 function App() {
   const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const [view, setView] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [data, setData] = useState(defaults);
   const [loading, setLoading] = useState(true);
@@ -96,7 +97,7 @@ function App() {
     try {
       const clean = {...next};
       delete clean.saturdayGroups;
-      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'5.1.0'}, {merge:false});
+      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'6.0.0'}, {merge:false});
       setToast(message);
     } catch (err) { setError(err.message); }
   }
@@ -147,6 +148,8 @@ function App() {
   }
 
   function automaticFor(date) {
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    date = normalizedDate;
     const day = date.getDay();
     const active = data.team.filter(p=>p.active);
     if (day === 0) return {kind:'off', people:[]};
@@ -180,13 +183,13 @@ function App() {
     return Array.from({length:42},(_,i)=>{ const d=new Date(start); d.setDate(start.getDate()+i); return d; });
   }, [view]);
 
-  const todayAssignment = assignmentFor(now);
+  const todayAssignment = assignmentFor(today);
   const monthLabel = view.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   const visibleMonthDays = cells.filter(d=>d.getMonth()===view.getMonth());
   const noExtraCount = visibleMonthDays.filter(d=>assignmentFor(d).kind==='none').length;
   const extraDaysCount = visibleMonthDays.filter(d=>assignmentFor(d).kind==='extra' && assignmentFor(d).people.length).length;
   const nextWorkDate = (() => {
-    const d = new Date(now);
+    const d = new Date(today);
     for (let i=0;i<14;i++) {
       if (d.getDay() !== 0 && assignmentFor(d).kind === 'extra') return d;
       d.setDate(d.getDate()+1);
@@ -202,7 +205,7 @@ function App() {
 
   return <Box className={dark ? 'app dark' : 'app light'}>
     <header>
-      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário inteligente da equipe · v5.1</Typography></Box>
+      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário inteligente da equipe · v6.0</Typography></Box>
       <Stack direction="row" spacing={1} alignItems="center">
         <Chip icon={<CheckCircle/>} label={loading?'Conectando...':'Sincronizado'} color={loading?'default':'success'} variant="outlined" />
         <Tooltip title={dark?'Tema claro':'Tema escuro'}><IconButton onClick={()=>setDark(!dark)}>{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>
@@ -229,7 +232,7 @@ function App() {
         <div className="calendar-grid">
           {cells.map(date=>{
             const asg=assignmentFor(date); const key=fmtKey(date);
-            const outside=date.getMonth()!==view.getMonth(); const isToday=key===fmtKey(now);
+            const outside=date.getMonth()!==view.getMonth(); const isToday=key===fmtKey(today);
             return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''} ${asg.kind==='none'?'no-extra-day':''}`} onClick={()=>setSelected(date)}>
               <span className="day-number">{date.getDate()}</span>
               <div className="events">
@@ -242,7 +245,7 @@ function App() {
 
       <aside>
         <div className="panel hero-panel">
-          <span className="eyebrow">HOJE · {ptDate(now)}</span>
+          <span className="eyebrow">HOJE · {ptDate(today)}</span>
           <Typography variant="h5" fontWeight={900}>{todayAssignment.kind==='none'?'Sem hora extra':todayAssignment.people.map(p=>p.name).join(' + ') || 'Sem escala'}</Typography>
           <Typography className="muted">{todayAssignment.kind==='none'?'A vez permanece com a mesma pessoa para o próximo dia útil.':'Escala ativa para hoje.'}</Typography>
           <div className="access-pill">{user ? (isAdmin?'● Administrador conectado':'● Somente visualização') : '● Visualização pública'}</div>

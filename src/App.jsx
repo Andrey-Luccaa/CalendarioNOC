@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert, Avatar, Box, Button, Chip, Dialog, DialogActions, DialogContent,
   DialogTitle, Divider, IconButton, MenuItem, Select, Snackbar, Stack,
-  Switch, TextField, Tooltip, Typography
+  Switch, TextField, Tooltip, Typography, ThemeProvider, createTheme, CssBaseline
 } from '@mui/material';
 import {
   Add, ChevronLeft, ChevronRight, Close, DarkMode, Delete, Edit,
@@ -77,7 +77,11 @@ function App() {
   const [data, setData] = useState(defaults);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('escala-theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? true;
+  });
   const [selected, setSelected] = useState(null);
   const [teamOpen, setTeamOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
@@ -86,7 +90,34 @@ function App() {
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
+  const muiTheme = useMemo(() => createTheme({
+    palette: {
+      mode: dark ? 'dark' : 'light',
+      primary: { main: dark ? '#22d3ee' : '#0284c7' },
+      success: { main: '#10b981' },
+      background: {
+        default: dark ? '#030507' : '#eef5f9',
+        paper: dark ? '#0a0f14' : '#ffffff',
+      },
+      text: {
+        primary: dark ? '#f8fbff' : '#10212d',
+        secondary: dark ? '#91a2af' : '#607481',
+      },
+    },
+    shape: { borderRadius: 14 },
+    typography: { fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, sans-serif' },
+    components: {
+      MuiButton: { styleOverrides: { root: { textTransform: 'none', fontWeight: 800 } } },
+      MuiDialog: { styleOverrides: { paper: { borderRadius: 22 } } },
+      MuiTooltip: { styleOverrides: { tooltip: { fontSize: 12 } } },
+    },
+  }), [dark]);
+
   useEffect(() => onAuthStateChanged(auth, setUser), []);
+  useEffect(() => {
+    localStorage.setItem('escala-theme', dark ? 'dark' : 'light');
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+  }, [dark]);
   useEffect(() => onSnapshot(DOC_REF, (snap) => {
     const next = snap.exists() ? mergeData(snap.data()) : defaults;
     setData(next); setLoading(false);
@@ -97,7 +128,7 @@ function App() {
     try {
       const clean = {...next};
       delete clean.saturdayGroups;
-      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'6.0.0'}, {merge:false});
+      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'7.0.0'}, {merge:false});
       setToast(message);
     } catch (err) { setError(err.message); }
   }
@@ -203,12 +234,12 @@ function App() {
     catch (err) { setError(err.message); }
   }
 
-  return <Box className={dark ? 'app dark' : 'app light'}>
+  return <ThemeProvider theme={muiTheme}><CssBaseline/><Box className={dark ? 'app dark' : 'app light'}>
     <header>
-      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário inteligente da equipe · v6.0</Typography></Box>
+      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário inteligente da equipe · v7.0</Typography></Box>
       <Stack direction="row" spacing={1} alignItems="center">
         <Chip icon={<CheckCircle/>} label={loading?'Conectando...':'Sincronizado'} color={loading?'default':'success'} variant="outlined" />
-        <Tooltip title={dark?'Tema claro':'Tema escuro'}><IconButton onClick={()=>setDark(!dark)}>{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>
+        <Tooltip title={dark?'Ativar tema claro':'Ativar tema escuro'}><IconButton className="theme-toggle" onClick={()=>setDark(v=>!v)} aria-label="Alternar tema">{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>
         {user ? <Button startIcon={<Logout/>} onClick={()=>signOut(auth)} variant="outlined">Sair</Button> : <Button startIcon={<Login/>} onClick={login} variant="contained">Entrar</Button>}
       </Stack>
     </header>
@@ -280,7 +311,7 @@ function App() {
     <ConfigDialog open={configOpen} data={data} onClose={()=>setConfigOpen(false)} onSave={async(changes)=>{await persist({...data,...changes});setConfigOpen(false)}} />
     <Snackbar open={!!toast} autoHideDuration={3000} onClose={()=>setToast('')} message={toast}/>
     <Snackbar open={!!error} autoHideDuration={6000} onClose={()=>setError('')}><Alert severity="error" onClose={()=>setError('')}>{error}</Alert></Snackbar>
-  </Box>
+  </Box></ThemeProvider>
 }
 
 function DayDialog({open,date,data,assignment,admin,onClose,onSave,onReset}) {

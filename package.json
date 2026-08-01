@@ -1,7 +1,7 @@
 {
   "name": "escala-hora-extra-v4",
   "private": true,
-  "version": "5.0.0",
+  "version": "5.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

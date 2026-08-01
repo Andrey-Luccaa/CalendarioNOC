@@ -96,37 +96,54 @@ function App() {
     try {
       const clean = {...next};
       delete clean.saturdayGroups;
-      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'5.0.0'}, {merge:false});
+      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'5.1.0'}, {merge:false});
       setToast(message);
     } catch (err) { setError(err.message); }
   }
 
-  function turnWasConsumed(date, type) {
-    const override = data.overrides[fmtKey(date)];
-    if (override?.kind === 'none') return false;
-    return type === 'weekday' ? isWeekday(date) : date.getDay() === 6;
+  function isNoExtraOverride(date) {
+    return data.overrides?.[fmtKey(date)]?.kind === 'none';
   }
 
-  function completedTurnsBetween(start, end, type) {
-    if (fmtKey(start) === fmtKey(end)) return 0;
-    const forward = end > start;
-    let count = 0;
-    const cursor = new Date(start);
+  function earliestRelevantDate(anchor, target, type) {
+    let earliest = new Date(anchor);
+    if (target < earliest) earliest = new Date(target);
 
-    if (forward) {
-      while (fmtKey(cursor) !== fmtKey(end)) {
-        if (turnWasConsumed(cursor, type)) count++;
-        cursor.setDate(cursor.getDate() + 1);
-      }
-      return count;
+    Object.entries(data.overrides || {}).forEach(([key, value]) => {
+      if (value?.kind !== 'none') return;
+      const date = parseKey(key);
+      const valid = type === 'weekday' ? isWeekday(date) : date.getDay() === 6;
+      if (!valid || date > target) return;
+      if (date < earliest) earliest = date;
+    });
+
+    return earliest;
+  }
+
+  function consumedWeekdayTurns(anchor, target) {
+    const earliest = earliestRelevantDate(anchor, target, 'weekday');
+    let offset = businessDaysBetween(anchor, earliest);
+    const cursor = new Date(earliest);
+
+    while (cursor < target) {
+      if (isWeekday(cursor) && !isNoExtraOverride(cursor)) offset++;
+      cursor.setDate(cursor.getDate() + 1);
     }
 
-    cursor.setDate(cursor.getDate() - 1);
-    while (cursor >= end) {
-      if (turnWasConsumed(cursor, type)) count--;
-      cursor.setDate(cursor.getDate() - 1);
+    return offset;
+  }
+
+  function consumedSaturdayTurns(anchor, target) {
+    const earliest = earliestRelevantDate(anchor, target, 'saturday');
+    let offset = saturdaysBetween(anchor, earliest);
+    const cursor = new Date(earliest);
+
+    while (cursor < target) {
+      if (cursor.getDay() === 6 && !isNoExtraOverride(cursor)) offset++;
+      cursor.setDate(cursor.getDate() + 1);
     }
-    return count;
+
+    return offset;
   }
 
   function automaticFor(date) {
@@ -136,7 +153,7 @@ function App() {
 
     if (day === 6) {
       const start = parseKey(data.saturdayStart);
-      const completed = completedTurnsBetween(start, date, 'saturday');
+      const completed = consumedSaturdayTurns(start, date);
       const index = ((completed % 2) + 2) % 2;
       const ids = index === 0 ? (data.saturdayGroupA || []) : (data.saturdayGroupB || []);
       return {kind:'extra', people:ids.map(id=>data.team.find(p=>p.id===id)).filter(Boolean)};
@@ -144,7 +161,7 @@ function App() {
 
     if (!isWeekday(date) || !active.length) return {kind:'off', people:[]};
     const firstIndex = Math.max(0, active.findIndex(p=>p.id===data.weekdayFirstId));
-    const completed = completedTurnsBetween(parseKey(data.weekdayStart), date, 'weekday');
+    const completed = consumedWeekdayTurns(parseKey(data.weekdayStart), date);
     const index = ((firstIndex + completed) % active.length + active.length) % active.length;
     return {kind:'extra', people:[active[index]]};
   }
@@ -185,7 +202,7 @@ function App() {
 
   return <Box className={dark ? 'app dark' : 'app light'}>
     <header>
-      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário inteligente da equipe · v5.0</Typography></Box>
+      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário inteligente da equipe · v5.1</Typography></Box>
       <Stack direction="row" spacing={1} alignItems="center">
         <Chip icon={<CheckCircle/>} label={loading?'Conectando...':'Sincronizado'} color={loading?'default':'success'} variant="outlined" />
         <Tooltip title={dark?'Tema claro':'Tema escuro'}><IconButton onClick={()=>setDark(!dark)}>{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>

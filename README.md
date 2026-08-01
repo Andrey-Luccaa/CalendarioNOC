@@ -1,4 +1,4 @@
-# Escala de Hora Extra V5
+# Escala de Hora Extra V5.1
 
 Aplicação React + Vite + Firebase Authentication + Cloud Firestore.
 
@@ -51,3 +51,7 @@ A interface esconde os controles para visitantes, mas a proteção real está na
 
 ## Regra v5
 O rodízio só avança quando a hora extra é realizada. Dias marcados como “Sem hora extra” preservam a vez para o próximo dia útil. A mesma regra vale para os grupos de sábado.
+
+
+## Correção v5.1
+Dias marcados como “Sem hora extra” agora deslocam corretamente toda a sequência futura, inclusive quando a exceção ocorreu antes da data-base configurada. Exemplo: 31/07 era Jonatas e não houve extra; 03/08 continua sendo Jonatas.

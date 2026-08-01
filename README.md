@@ -1,4 +1,4 @@
-# Escala de Hora Extra V4
+# Escala de Hora Extra V5
 
 Aplicação React + Vite + Firebase Authentication + Cloud Firestore.
 
@@ -47,3 +47,7 @@ Ao abrir, o documento `escala/principal` pode ainda não existir. Entre com o e-
 ## Segurança
 
 A interface esconde os controles para visitantes, mas a proteção real está nas regras do Firestore. Somente o e-mail definido nas regras consegue gravar no banco.
+
+
+## Regra v5
+O rodízio só avança quando a hora extra é realizada. Dias marcados como “Sem hora extra” preservam a vez para o próximo dia útil. A mesma regra vale para os grupos de sábado.

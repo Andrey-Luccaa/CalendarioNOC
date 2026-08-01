@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import {
   Add, ChevronLeft, ChevronRight, Close, DarkMode, Delete, Edit,
-  LightMode, Login, Logout, RestartAlt, Save, Today
+  LightMode, Login, Logout, RestartAlt, Save, Today, CheckCircle, DoNotDisturbAlt
 } from '@mui/icons-material';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -37,8 +37,8 @@ const defaults = {
     {id:'vinicius', name:'Vinicius', color:'#ff4f81', active:true},
     {id:'jonatas', name:'Jonatas', color:'#42d392', active:true},
   ],
-  weekdayStart: '2026-08-03',
-  weekdayFirstId: 'andrey',
+  weekdayStart: '2026-07-31',
+  weekdayFirstId: 'jonatas',
   saturdayStart: '2026-08-01',
   saturdayGroupA: ['andrey','vinicius'],
   saturdayGroupB: ['jonatas'],
@@ -96,25 +96,56 @@ function App() {
     try {
       const clean = {...next};
       delete clean.saturdayGroups;
-      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'4.2.0'}, {merge:false});
+      await setDoc(DOC_REF, {...clean, updatedAt: serverTimestamp(), updatedBy: user.email, appVersion:'5.0.0'}, {merge:false});
       setToast(message);
     } catch (err) { setError(err.message); }
+  }
+
+  function turnWasConsumed(date, type) {
+    const override = data.overrides[fmtKey(date)];
+    if (override?.kind === 'none') return false;
+    return type === 'weekday' ? isWeekday(date) : date.getDay() === 6;
+  }
+
+  function completedTurnsBetween(start, end, type) {
+    if (fmtKey(start) === fmtKey(end)) return 0;
+    const forward = end > start;
+    let count = 0;
+    const cursor = new Date(start);
+
+    if (forward) {
+      while (fmtKey(cursor) !== fmtKey(end)) {
+        if (turnWasConsumed(cursor, type)) count++;
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return count;
+    }
+
+    cursor.setDate(cursor.getDate() - 1);
+    while (cursor >= end) {
+      if (turnWasConsumed(cursor, type)) count--;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return count;
   }
 
   function automaticFor(date) {
     const day = date.getDay();
     const active = data.team.filter(p=>p.active);
     if (day === 0) return {kind:'off', people:[]};
+
     if (day === 6) {
       const start = parseKey(data.saturdayStart);
-      const index = ((saturdaysBetween(start,date)%2)+2)%2;
+      const completed = completedTurnsBetween(start, date, 'saturday');
+      const index = ((completed % 2) + 2) % 2;
       const ids = index === 0 ? (data.saturdayGroupA || []) : (data.saturdayGroupB || []);
       return {kind:'extra', people:ids.map(id=>data.team.find(p=>p.id===id)).filter(Boolean)};
     }
+
     if (!isWeekday(date) || !active.length) return {kind:'off', people:[]};
     const firstIndex = Math.max(0, active.findIndex(p=>p.id===data.weekdayFirstId));
-    const offset = businessDaysBetween(parseKey(data.weekdayStart), date);
-    const index = ((firstIndex + offset) % active.length + active.length) % active.length;
+    const completed = completedTurnsBetween(parseKey(data.weekdayStart), date, 'weekday');
+    const index = ((firstIndex + completed) % active.length + active.length) % active.length;
     return {kind:'extra', people:[active[index]]};
   }
 
@@ -134,6 +165,18 @@ function App() {
 
   const todayAssignment = assignmentFor(now);
   const monthLabel = view.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const visibleMonthDays = cells.filter(d=>d.getMonth()===view.getMonth());
+  const noExtraCount = visibleMonthDays.filter(d=>assignmentFor(d).kind==='none').length;
+  const extraDaysCount = visibleMonthDays.filter(d=>assignmentFor(d).kind==='extra' && assignmentFor(d).people.length).length;
+  const nextWorkDate = (() => {
+    const d = new Date(now);
+    for (let i=0;i<14;i++) {
+      if (d.getDay() !== 0 && assignmentFor(d).kind === 'extra') return d;
+      d.setDate(d.getDate()+1);
+    }
+    return now;
+  })();
+  const nextAssignment = assignmentFor(nextWorkDate);
 
   async function login() {
     try { await signInWithPopup(auth, googleProvider); }
@@ -142,9 +185,9 @@ function App() {
 
   return <Box className={dark ? 'app dark' : 'app light'}>
     <header>
-      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário compartilhado da equipe · v4.2</Typography></Box>
+      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Calendário inteligente da equipe · v5.0</Typography></Box>
       <Stack direction="row" spacing={1} alignItems="center">
-        <Chip label={loading?'Carregando...':'Atualização em tempo real'} color={loading?'default':'success'} variant="outlined" />
+        <Chip icon={<CheckCircle/>} label={loading?'Conectando...':'Sincronizado'} color={loading?'default':'success'} variant="outlined" />
         <Tooltip title={dark?'Tema claro':'Tema escuro'}><IconButton onClick={()=>setDark(!dark)}>{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>
         {user ? <Button startIcon={<Logout/>} onClick={()=>signOut(auth)} variant="outlined">Sair</Button> : <Button startIcon={<Login/>} onClick={login} variant="contained">Entrar</Button>}
       </Stack>
@@ -160,15 +203,20 @@ function App() {
           </Stack>
           <Button startIcon={<Today/>} onClick={()=>setView(new Date(now.getFullYear(),now.getMonth(),1))}>Hoje</Button>
         </div>
+        <div className="summary-strip">
+          <div><strong>{extraDaysCount}</strong><span>Dias com extra</span></div>
+          <div><strong>{noExtraCount}</strong><span>Sem hora extra</span></div>
+          <div><strong>{nextAssignment.people.map(p=>p.name).join(' + ') || '—'}</strong><span>Próximo da fila</span></div>
+        </div>
         <div className="weekdays">{['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(x=><div key={x}>{x}</div>)}</div>
         <div className="calendar-grid">
           {cells.map(date=>{
             const asg=assignmentFor(date); const key=fmtKey(date);
             const outside=date.getMonth()!==view.getMonth(); const isToday=key===fmtKey(now);
-            return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''}`} onClick={()=>setSelected(date)}>
+            return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''} ${asg.kind==='none'?'no-extra-day':''}`} onClick={()=>setSelected(date)}>
               <span className="day-number">{date.getDate()}</span>
               <div className="events">
-                {asg.kind==='none' ? <div className="event none">Sem hora extra</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
+                {asg.kind==='none' ? <div className="event none"><DoNotDisturbAlt fontSize="inherit"/> Sem hora extra</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
               </div>
             </button>
           })}
@@ -177,13 +225,19 @@ function App() {
 
       <aside>
         <div className="panel hero-panel">
-          <Typography className="muted">Hoje · {ptDate(now)}</Typography>
-          <Typography variant="h6" fontWeight={800}>{todayAssignment.kind==='none'?'Sem hora extra':todayAssignment.people.map(p=>p.name).join(' + ') || 'Sem escala'}</Typography>
-          <Typography className="muted">{user ? (isAdmin?'Administrador conectado':'Conta sem permissão de edição') : 'Visualização pública'}</Typography>
+          <span className="eyebrow">HOJE · {ptDate(now)}</span>
+          <Typography variant="h5" fontWeight={900}>{todayAssignment.kind==='none'?'Sem hora extra':todayAssignment.people.map(p=>p.name).join(' + ') || 'Sem escala'}</Typography>
+          <Typography className="muted">{todayAssignment.kind==='none'?'A vez permanece com a mesma pessoa para o próximo dia útil.':'Escala ativa para hoje.'}</Typography>
+          <div className="access-pill">{user ? (isAdmin?'● Administrador conectado':'● Somente visualização') : '● Visualização pública'}</div>
         </div>
         <div className="panel">
           <Stack direction="row" justifyContent="space-between" alignItems="center"><Typography variant="h6" fontWeight={800}>Equipe</Typography>{isAdmin&&<IconButton onClick={()=>setTeamOpen(true)}><Edit/></IconButton>}</Stack>
           <Stack spacing={1.2} mt={2}>{data.team.map(p=><Stack key={p.id} direction="row" spacing={1.3} alignItems="center"><Avatar sx={{width:28,height:28,bgcolor:p.color}}>{p.name[0]}</Avatar><Typography>{p.name}</Typography>{!p.active&&<Chip size="small" label="Inativo"/>}</Stack>)}</Stack>
+        </div>
+        <div className="panel rule-panel">
+          <span className="eyebrow">REGRA DO RODÍZIO</span>
+          <Typography fontWeight={800} mt={1}>A fila só avança quando há hora extra.</Typography>
+          <Typography className="muted" mt={1}>Ao marcar “Sem hora extra”, a pessoa continua como próxima responsável.</Typography>
         </div>
         <div className="panel">
           <Typography variant="h6" fontWeight={800}>Legenda</Typography>
@@ -195,7 +249,7 @@ function App() {
 
     <DayDialog open={!!selected} date={selected} data={data} assignment={selected?assignmentFor(selected):null} admin={isAdmin} onClose={()=>setSelected(null)} onSave={async(result)=>{
       const key=fmtKey(selected); const auto=automaticFor(selected);
-      const history={id:uid(),date:key,at:new Date().toISOString(),by:user.email,description:result.kind==='none'?'Marcado sem hora extra':`Responsável: ${result.people.map(id=>data.team.find(p=>p.id===id)?.name).filter(Boolean).join(' + ')}`};
+      const history={id:uid(),date:key,at:new Date().toISOString(),by:user.email,description:result.kind==='none'?'Sem hora extra — fila mantida':`Responsável: ${result.people.map(id=>data.team.find(p=>p.id===id)?.name).filter(Boolean).join(' + ')}`};
       const next={...data,overrides:{...data.overrides,[key]:result},history:[history,...data.history].slice(0,200)};
       await persist(next); setSelected(null);
     }} onReset={async()=>{
@@ -215,8 +269,8 @@ function DayDialog({open,date,data,assignment,admin,onClose,onSave,onReset}) {
   const toggle=(id)=>setPeople(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);
   return <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm"><DialogTitle>Escala de {date?ptDate(date):''}</DialogTitle><DialogContent>
     {!admin&&<Alert severity="info" sx={{mb:2}}>Você está no modo de visualização.</Alert>}
-    <Typography gutterBottom>Status</Typography><Select fullWidth value={kind} onChange={e=>setKind(e.target.value)} disabled={!admin}><MenuItem value="extra">Hora extra</MenuItem><MenuItem value="none">Sem hora extra</MenuItem></Select>
-    {kind==='extra'&&<><Typography mt={2} gutterBottom>Responsável(is)</Typography><Stack direction="row" gap={1} flexWrap="wrap">{data.team.filter(p=>p.active).map(p=><Chip key={p.id} clickable disabled={!admin} onClick={()=>toggle(p.id)} label={p.name} variant={people.includes(p.id)?'filled':'outlined'} sx={people.includes(p.id)?{bgcolor:p.color,color:'#061018'}:{}}/>)}</Stack></>}
+    <Typography gutterBottom fontWeight={800}>O que aconteceu neste dia?</Typography><Select fullWidth value={kind} onChange={e=>setKind(e.target.value)} disabled={!admin}><MenuItem value="extra">Hora extra realizada — avançar fila</MenuItem><MenuItem value="none">Sem hora extra — manter a vez</MenuItem></Select>
+    {kind==='none'&&<Alert severity="info" sx={{mt:2}}>A ordem não avançará. A mesma pessoa continuará no próximo dia útil.</Alert>}{kind==='extra'&&<><Typography mt={2} gutterBottom fontWeight={800}>Quem realizou a hora extra?</Typography><Stack direction="row" gap={1} flexWrap="wrap">{data.team.filter(p=>p.active).map(p=><Chip key={p.id} clickable disabled={!admin} onClick={()=>toggle(p.id)} label={p.name} variant={people.includes(p.id)?'filled':'outlined'} sx={people.includes(p.id)?{bgcolor:p.color,color:'#061018'}:{}}/>)}</Stack></>}
     <TextField fullWidth multiline minRows={2} label="Observação" value={note} onChange={e=>setNote(e.target.value)} disabled={!admin} sx={{mt:2}}/>
   </DialogContent><DialogActions><Button onClick={onClose}>Fechar</Button>{admin&&<Button startIcon={<RestartAlt/>} onClick={onReset}>Restaurar</Button>}{admin&&<Button variant="contained" startIcon={<Save/>} disabled={kind==='extra'&&!people.length} onClick={()=>onSave({kind,people:kind==='none'?[]:people,note})}>Salvar</Button>}</DialogActions></Dialog>
 }

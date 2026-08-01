@@ -1,5 +1,17 @@
 *{box-sizing:border-box}
 :root{font-synthesis:none;text-rendering:optimizeLegibility}
+/* Variáveis globais: o Drawer do Material UI é renderizado fora de .app */
+html[data-theme="dark"]{
+  --page-bg:#030507;--card:#080d12;--card-2:#0d141b;--card-3:#111b24;--surface:#070b0f;
+  --border:#21303c;--border-soft:#14202a;--text:#f5fbff;--muted:#91a2af;--header:#060a0e;
+  --accent:#18c8ef;--accent-strong:#08a9d6;--glow:rgba(24,200,239,.19);--shadow:0 28px 80px rgba(0,0,0,.66);
+}
+html[data-theme="light"]{
+  --page-bg:#eef5f9;--card:#ffffff;--card-2:#f6fafc;--card-3:#edf5f8;--surface:#ffffff;
+  --border:#bfd4df;--border-soft:#d9e6ec;--text:#10212d;--muted:#647986;--header:#f8fcfe;
+  --accent:#0284c7;--accent-strong:#0369a1;--glow:rgba(2,132,199,.13);--shadow:0 20px 55px rgba(40,83,105,.15);
+}
+
 html,body,#root{min-height:100%}
 body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
 button,input,select,textarea{font:inherit}
@@ -53,11 +65,18 @@ aside{display:grid;align-content:start;gap:16px;position:sticky;top:18px}.panel{
 @media(max-width:700px){.app{padding:10px}.app header{align-items:flex-start;flex-direction:column}.app header>div:last-child{width:100%;flex-wrap:wrap}.summary-strip{grid-template-columns:1fr}.summary-strip>div{border-right:0;border-bottom:1px solid var(--border)}.summary-strip>div:last-child{border-bottom:0}.day{min-height:92px;padding:6px}.event{font-size:9px;padding:5px}.weekdays div{font-size:10px;padding:9px 2px}aside{grid-template-columns:1fr}.calendar-toolbar{padding:12px 9px}.calendar-toolbar h5{font-size:18px}.calendar-card{border-radius:16px}.day.today:after{display:none}}
 @media(prefers-reduced-motion:reduce){.app,.app *{transition:none!important;animation:none!important}}
 
-/* V8 — painel lateral e interface dinâmica */
-.day-drawer{width:min(460px,100vw)!important;background:var(--card)!important;border-left:1px solid var(--border)!important;box-shadow:-30px 0 80px rgba(0,0,0,.45)!important}
-.drawer-shell{height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--card),var(--surface));color:var(--text)}
+/* V8.1 — painel lateral sólido com fundo desfocado */
+.drawer-backdrop{
+  background:rgba(0,4,8,.62)!important;
+  backdrop-filter:blur(12px) saturate(125%) brightness(.72);
+  -webkit-backdrop-filter:blur(12px) saturate(125%) brightness(.72);
+}
+html[data-theme="light"] .drawer-backdrop{background:rgba(31,49,61,.30)!important;backdrop-filter:blur(10px) saturate(115%);-webkit-backdrop-filter:blur(10px) saturate(115%)}
+
+.day-drawer{width:min(500px,100vw)!important;background-color:var(--card)!important;background-image:linear-gradient(180deg,var(--card-3),var(--card) 18%,var(--surface))!important;border-left:1px solid var(--border)!important;box-shadow:-30px 0 80px rgba(0,0,0,.45)!important}
+.drawer-shell{height:100%;display:flex;flex-direction:column;background:var(--card);color:var(--text);isolation:isolate}
 .drawer-head{padding:24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--card-3),var(--card))}
-.drawer-content{padding:22px;display:grid;gap:20px;overflow:auto;flex:1}
+.drawer-content{padding:22px;display:grid;gap:20px;overflow:auto;flex:1;background:var(--surface)}
 .drawer-section{display:grid;gap:12px;padding:18px;border:1px solid var(--border-soft);border-radius:18px;background:var(--card-2)}
 .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .status-card{min-height:128px;border-radius:16px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:16px;text-align:left;display:grid;align-content:start;gap:8px;cursor:pointer}

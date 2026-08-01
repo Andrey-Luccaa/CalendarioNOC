@@ -117,6 +117,7 @@ function App() {
   useEffect(() => {
     localStorage.setItem('escala-theme', dark ? 'dark' : 'light');
     document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   }, [dark]);
   useEffect(() => onSnapshot(DOC_REF, (snap) => {
     const next = snap.exists() ? mergeData(snap.data()) : defaults;
@@ -236,7 +237,7 @@ function App() {
 
   return <ThemeProvider theme={muiTheme}><CssBaseline/><Box className={dark ? 'app dark' : 'app light'}>
     <header>
-      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Painel inteligente da equipe · v8.0</Typography></Box>
+      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Painel inteligente da equipe · v8.1</Typography></Box>
       <Stack direction="row" spacing={1} alignItems="center">
         <Chip icon={<CheckCircle/>} label={loading?'Conectando...':'Sincronizado'} color={loading?'default':'success'} variant="outlined" />
         <Tooltip title={dark?'Ativar tema claro':'Ativar tema escuro'}><IconButton className="theme-toggle" onClick={()=>setDark(v=>!v)} aria-label="Alternar tema">{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>
@@ -318,7 +319,7 @@ function DayDialog({open,date,data,assignment,admin,onClose,onSave,onReset}) {
   const [kind,setKind]=useState('extra'); const [people,setPeople]=useState([]); const [note,setNote]=useState('');
   useEffect(()=>{ if(open&&assignment){setKind(assignment.kind==='none'?'none':'extra');setPeople(assignment.people.map(p=>p.id));setNote(assignment.note||'')} },[open,assignment]);
   const toggle=(id)=>setPeople(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);
-  return <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{className:'day-drawer'}}>
+  return <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{className:'day-drawer'}} BackdropProps={{className:'drawer-backdrop'}} ModalProps={{keepMounted:true}}>
     <Box className="drawer-shell">
       <Box className="drawer-head">
         <Box><span className="eyebrow">EDITAR ESCALA</span><Typography variant="h5" fontWeight={900}>{date?ptDate(date):''}</Typography></Box>

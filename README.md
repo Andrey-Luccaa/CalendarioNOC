@@ -23,3 +23,17 @@ npm run dev
 ## Publicar no Vercel
 
 Envie todos os arquivos para o repositório e faça um novo deploy. Depois confirme que aparece `v8.0` abaixo do título.
+
+
+## Administradores dinâmicos (v8.2)
+
+1. Publique o conteúdo de `firestore.rules` na aba **Firestore > Regras**.
+2. Entre no site com um administrador principal.
+3. Abra **Gerenciar administradores**.
+4. Adicione o e-mail Google da pessoa. O acesso passa a valer em tempo real, sem novo deploy.
+
+Administradores principais protegidos:
+- andreyluccadantas@gmail.com
+- viniciusnex43@gmail.com
+
+Os administradores adicionados pelo painel ficam na coleção `admins` do Firestore e podem ser removidos pelo mesmo painel.

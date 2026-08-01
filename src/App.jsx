@@ -6,13 +6,14 @@ import {
 } from '@mui/material';
 import {
   Add, ChevronLeft, ChevronRight, Close, DarkMode, Delete, Edit,
-  LightMode, Login, Logout, RestartAlt, Save, Today, CheckCircle, DoNotDisturbAlt
+  LightMode, Login, Logout, RestartAlt, Save, Today, CheckCircle, DoNotDisturbAlt, AdminPanelSettings
 } from '@mui/icons-material';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
-import { ADMIN_EMAIL, auth, db, googleProvider } from './firebase';
+import { collection, deleteDoc, doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
+import { ADMIN_EMAILS, auth, db, googleProvider } from './firebase';
 
 const DOC_REF = doc(db, 'escala', 'principal');
+const ADMINS_REF = collection(db, 'admins');
 const fmtKey = (d) => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
 const parseKey = (k) => { const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); };
 const ptDate = (d) => d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
@@ -85,10 +86,14 @@ function App() {
   const [selected, setSelected] = useState(null);
   const [teamOpen, setTeamOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+  const [adminsOpen, setAdminsOpen] = useState(false);
+  const [admins, setAdmins] = useState([]);
   const [toast, setToast] = useState('');
   const [error, setError] = useState('');
 
-  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  const normalizedUserEmail = user?.email?.trim().toLowerCase() || '';
+  const isBootstrapAdmin = ADMIN_EMAILS.map(e=>e.trim().toLowerCase()).includes(normalizedUserEmail);
+  const isAdmin = isBootstrapAdmin || admins.some(item => item.email === normalizedUserEmail && item.active !== false);
 
   const muiTheme = useMemo(() => createTheme({
     palette: {
@@ -123,6 +128,31 @@ function App() {
     const next = snap.exists() ? mergeData(snap.data()) : defaults;
     setData(next); setLoading(false);
   }, (err) => { setError(`Erro ao carregar o Firestore: ${err.message}`); setLoading(false); }), []);
+  useEffect(() => onSnapshot(ADMINS_REF, (snapshot) => {
+    setAdmins(snapshot.docs.map(item => ({
+      id: item.id,
+      email: (item.data().email || item.id).trim().toLowerCase(),
+      ...item.data(),
+    })).sort((a,b) => a.email.localeCompare(b.email)));
+  }, (err) => setError(`Erro ao carregar administradores: ${err.message}`)), []);
+
+  useEffect(() => {
+    if (!user || !isBootstrapAdmin) return;
+    ADMIN_EMAILS.forEach(async (email) => {
+      const normalized = email.trim().toLowerCase();
+      try {
+        await setDoc(doc(db, 'admins', normalized), {
+          email: normalized,
+          active: true,
+          bootstrap: true,
+          updatedAt: serverTimestamp(),
+          updatedBy: normalizedUserEmail,
+        }, { merge: true });
+      } catch (err) {
+        setError(`Não foi possível inicializar os administradores: ${err.message}`);
+      }
+    });
+  }, [user, isBootstrapAdmin, normalizedUserEmail]);
 
   async function persist(next, message='Alterações salvas') {
     if (!isAdmin) return setError('Somente o administrador pode editar.');
@@ -237,7 +267,7 @@ function App() {
 
   return <ThemeProvider theme={muiTheme}><CssBaseline/><Box className={dark ? 'app dark' : 'app light'}>
     <header>
-      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Painel inteligente da equipe · v8.1</Typography></Box>
+      <Box><Typography variant="h5" fontWeight={800}>Escala de Hora Extra</Typography><Typography className="muted">Painel inteligente da equipe · v8.2</Typography></Box>
       <Stack direction="row" spacing={1} alignItems="center">
         <Chip icon={<CheckCircle/>} label={loading?'Conectando...':'Sincronizado'} color={loading?'default':'success'} variant="outlined" />
         <Tooltip title={dark?'Ativar tema claro':'Ativar tema escuro'}><IconButton className="theme-toggle" onClick={()=>setDark(v=>!v)} aria-label="Alternar tema">{dark?<LightMode/>:<DarkMode/>}</IconButton></Tooltip>
@@ -295,7 +325,10 @@ function App() {
           <Typography variant="h6" fontWeight={800}>Legenda</Typography>
           <Stack spacing={1} mt={2}>{data.team.filter(p=>p.active).map(p=><Stack key={p.id} direction="row" spacing={1} alignItems="center"><span className="dot" style={{background:p.color}}/><Typography>{p.name}</Typography></Stack>)}<Stack direction="row" spacing={1} alignItems="center"><span className="dot none-dot"/><Typography>Sem hora extra</Typography></Stack></Stack>
         </div>
-        {isAdmin&&<Button fullWidth variant="outlined" onClick={()=>setConfigOpen(true)}>Configurar rodízio</Button>}
+        {isAdmin&&<Stack spacing={1}>
+          <Button fullWidth variant="outlined" onClick={()=>setConfigOpen(true)}>Configurar rodízio</Button>
+          <Button fullWidth variant="outlined" startIcon={<AdminPanelSettings/>} onClick={()=>setAdminsOpen(true)}>Gerenciar administradores</Button>
+        </Stack>}
       </aside>
     </main>
 
@@ -310,6 +343,26 @@ function App() {
     }}/>
     <TeamDialog open={teamOpen} data={data} onClose={()=>setTeamOpen(false)} onSave={async(team)=>{await persist({...data,team});setTeamOpen(false)}} />
     <ConfigDialog open={configOpen} data={data} onClose={()=>setConfigOpen(false)} onSave={async(changes)=>{await persist({...data,...changes});setConfigOpen(false)}} />
+    <AdminsDialog
+      open={adminsOpen}
+      admins={admins}
+      bootstrapEmails={ADMIN_EMAILS}
+      currentEmail={normalizedUserEmail}
+      onClose={()=>setAdminsOpen(false)}
+      onAdd={async(email)=>{
+        const normalized=email.trim().toLowerCase();
+        if(!normalized || !/^\S+@\S+\.\S+$/.test(normalized)) throw new Error('Informe um e-mail válido.');
+        await setDoc(doc(db,'admins',normalized),{email:normalized,active:true,bootstrap:ADMIN_EMAILS.map(e=>e.toLowerCase()).includes(normalized),createdAt:serverTimestamp(),updatedAt:serverTimestamp(),updatedBy:normalizedUserEmail},{merge:true});
+        setToast('Administrador adicionado');
+      }}
+      onRemove={async(email)=>{
+        const normalized=email.trim().toLowerCase();
+        if(ADMIN_EMAILS.map(e=>e.toLowerCase()).includes(normalized)) throw new Error('Este é um administrador principal e não pode ser removido pelo painel.');
+        if(normalized===normalizedUserEmail) throw new Error('Você não pode remover o próprio acesso.');
+        await deleteDoc(doc(db,'admins',normalized));
+        setToast('Administrador removido');
+      }}
+    />
     <Snackbar open={!!toast} autoHideDuration={3000} onClose={()=>setToast('')} message={toast}/>
     <Snackbar open={!!error} autoHideDuration={6000} onClose={()=>setError('')}><Alert severity="error" onClose={()=>setError('')}>{error}</Alert></Snackbar>
   </Box></ThemeProvider>
@@ -352,6 +405,49 @@ function TeamDialog({open,data,onClose,onSave}) {
   const [team,setTeam]=useState([]); useEffect(()=>{if(open)setTeam(data.team.map(x=>({...x})))},[open,data]);
   const add=()=>setTeam([...team,{id:uid(),name:'Novo integrante',color:'#f5b942',active:true}]);
   return <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm"><DialogTitle>Personalizar equipe</DialogTitle><DialogContent><Stack spacing={1.5} mt={1}>{team.map((p,i)=><Stack key={p.id} direction="row" spacing={1} alignItems="center"><input type="color" value={p.color} onChange={e=>setTeam(team.map(x=>x.id===p.id?{...x,color:e.target.value}:x))}/><TextField size="small" fullWidth value={p.name} onChange={e=>setTeam(team.map(x=>x.id===p.id?{...x,name:e.target.value}:x))}/><Switch checked={p.active} onChange={e=>setTeam(team.map(x=>x.id===p.id?{...x,active:e.target.checked}:x))}/><IconButton onClick={()=>setTeam(team.filter(x=>x.id!==p.id))}><Delete/></IconButton></Stack>)}</Stack><Button startIcon={<Add/>} onClick={add} sx={{mt:2}}>Adicionar integrante</Button></DialogContent><DialogActions><Button onClick={onClose}>Cancelar</Button><Button variant="contained" onClick={()=>onSave(team)}>Salvar</Button></DialogActions></Dialog>
+}
+
+
+function AdminsDialog({open,admins,bootstrapEmails,currentEmail,onClose,onAdd,onRemove}) {
+  const [email,setEmail]=useState('');
+  const [busy,setBusy]=useState(false);
+  const [localError,setLocalError]=useState('');
+  const bootstrapSet=new Set(bootstrapEmails.map(item=>item.trim().toLowerCase()));
+  const rows=[...new Map([
+    ...bootstrapEmails.map(item=>[item.trim().toLowerCase(),{email:item.trim().toLowerCase(),bootstrap:true,active:true}]),
+    ...admins.map(item=>[item.email,{...item,bootstrap:item.bootstrap||bootstrapSet.has(item.email)}]),
+  ]).values()].sort((a,b)=>a.email.localeCompare(b.email));
+
+  useEffect(()=>{if(open){setEmail('');setLocalError('')}},[open]);
+
+  const add=async()=>{
+    setBusy(true);setLocalError('');
+    try{await onAdd(email);setEmail('')}catch(err){setLocalError(err.message)}finally{setBusy(false)}
+  };
+  const remove=async(target)=>{
+    setBusy(true);setLocalError('');
+    try{await onRemove(target)}catch(err){setLocalError(err.message)}finally{setBusy(false)}
+  };
+
+  return <Dialog open={open} onClose={busy?undefined:onClose} fullWidth maxWidth="sm">
+    <DialogTitle><Stack direction="row" spacing={1.2} alignItems="center"><AdminPanelSettings color="primary"/><span>Gerenciar administradores</span></Stack></DialogTitle>
+    <DialogContent>
+      <Typography className="muted" mb={2}>Adicione pessoas que poderão editar a escala. A alteração vale imediatamente, sem novo deploy.</Typography>
+      {localError&&<Alert severity="error" sx={{mb:2}}>{localError}</Alert>}
+      <Stack direction={{xs:'column',sm:'row'}} spacing={1} mb={2}>
+        <TextField fullWidth size="small" label="E-mail Google" placeholder="nome@gmail.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')add()}} disabled={busy}/>
+        <Button variant="contained" startIcon={<Add/>} onClick={add} disabled={busy||!email.trim()}>Adicionar</Button>
+      </Stack>
+      <Stack spacing={1}>
+        {rows.map(item=><Box key={item.email} className="admin-row">
+          <Avatar sx={{width:36,height:36,bgcolor:item.bootstrap?'primary.main':'success.main'}}>{item.email[0].toUpperCase()}</Avatar>
+          <Box sx={{minWidth:0,flex:1}}><Typography fontWeight={800} noWrap>{item.email}</Typography><Typography variant="caption" className="muted">{item.bootstrap?'Administrador principal':'Administrador pelo Firestore'}{item.email===currentEmail?' · Você':''}</Typography></Box>
+          {item.bootstrap?<Chip size="small" label="Principal" color="primary" variant="outlined"/>:<IconButton color="error" disabled={busy||item.email===currentEmail} onClick={()=>remove(item.email)} aria-label={`Remover ${item.email}`}><Delete/></IconButton>}
+        </Box>)}
+      </Stack>
+    </DialogContent>
+    <DialogActions><Button onClick={onClose} disabled={busy}>Fechar</Button></DialogActions>
+  </Dialog>
 }
 
 function ConfigDialog({open,data,onClose,onSave}) {

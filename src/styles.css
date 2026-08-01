@@ -88,3 +88,8 @@ html[data-theme="light"] .drawer-backdrop{background:rgba(31,49,61,.30)!importan
 .calendar-card{isolation:isolate}.day{will-change:transform}.day:hover .event{transform:translateX(3px)}
 .panel{position:relative;overflow:hidden}.panel:before{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-70px;top:-70px;background:var(--glow);filter:blur(25px);pointer-events:none}
 @media(max-width:600px){.day-drawer{width:100vw!important}.status-grid,.people-grid{grid-template-columns:1fr}.drawer-actions{flex-wrap:wrap}.drawer-actions .MuiButton-root{flex:1}.drawer-head,.drawer-content{padding:16px}}
+
+
+/* Gerenciamento de administradores */
+.admin-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border-soft);border-radius:14px;background:var(--card-2)}
+.admin-row:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--border));transform:translateY(-1px);box-shadow:0 10px 25px var(--glow)}

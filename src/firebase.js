@@ -12,9 +12,8 @@ export const firebaseConfig = {
   measurementId: 'G-52Y1NDP8XW',
 };
 
-// TROQUE pelo e-mail Google que terá permissão de editar.
-export const ADMIN_EMAIL = 'andreyluccadantas@gmail.com';
-export const ADMIN_EMAIL = 'viniciusnex43@gmail.com';
+// Administradores principais. Outros podem ser adicionados pelo painel do site.
+export const ADMIN_EMAILS = ['andreyluccadantas@gmail.com','viniciusnex43@gmail.com'];
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

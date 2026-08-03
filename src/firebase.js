@@ -13,7 +13,7 @@ export const firebaseConfig = {
 };
 
 // Administradores principais. Outros podem ser adicionados pelo painel do site.
-export const ADMIN_EMAILS = ['andreyluccadantas@gmail.com','viniciusnex43@gmail.com'];
+export const ADMIN_EMAILS = ['andreyluccadantas@gmail.com'];
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

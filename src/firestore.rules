@@ -11,8 +11,7 @@ service cloud.firestore {
 
     function isBootstrapAdmin() {
       return signedIn() && normalizedEmail() in [
-        'andreyluccadantas@gmail.com',
-        'viniciusnex43@gmail.com'
+        'andreyluccadantas@gmail.com'
       ];
     }
 

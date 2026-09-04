@@ -57,20 +57,28 @@ const addDays = (date, days) => {
 const getBrazilHolidays = (year) => {
   const easter = easterSunday(year);
   return [
-    {date:new Date(year,0,1), name:'Confraternização Universal', displayName:'Ano Novo', theme:'new-year'},
-    {date:addDays(easter,-2), name:'Paixão de Cristo', displayName:'Paixão de Cristo', theme:'easter'},
-    {date:new Date(year,3,21), name:'Tiradentes', displayName:'Tiradentes', theme:'tiradentes'},
-    {date:new Date(year,4,1), name:'Dia Mundial do Trabalho', displayName:'Dia do Trabalho', theme:'work'},
-    {date:new Date(year,8,7), name:'Independência do Brasil', displayName:'Independência do Brasil', theme:'independence'},
-    {date:new Date(year,9,12), name:'Nossa Senhora Aparecida', displayName:'Nossa Senhora Aparecida', theme:'aparecida'},
-    {date:new Date(year,10,2), name:'Finados', displayName:'Finados', theme:'finados'},
-    {date:new Date(year,10,15), name:'Proclamação da República', displayName:'Proclamação da República', theme:'republic'},
-    {date:new Date(year,10,20), name:'Dia Nacional de Zumbi e da Consciência Negra', displayName:'Consciência Negra', theme:'consciencia-negra'},
-    {date:new Date(year,11,25), name:'Natal', displayName:'Natal', theme:'christmas'},
+    {date:new Date(year,0,1), name:'Confraternização Universal', displayName:'Ano Novo', theme:'new-year', scope:'national'},
+    {date:addDays(easter,-2), name:'Paixão de Cristo', displayName:'Paixão de Cristo', theme:'easter', scope:'national'},
+    {date:new Date(year,3,21), name:'Tiradentes', displayName:'Tiradentes', theme:'tiradentes', scope:'national'},
+    {date:new Date(year,4,1), name:'Dia Mundial do Trabalho', displayName:'Dia do Trabalho', theme:'work', scope:'national'},
+    {date:new Date(year,8,7), name:'Independência do Brasil', displayName:'Independência do Brasil', theme:'independence', scope:'national'},
+    {date:new Date(year,9,12), name:'Nossa Senhora Aparecida', displayName:'Nossa Senhora Aparecida', theme:'aparecida', scope:'national'},
+    {date:new Date(year,10,2), name:'Finados', displayName:'Finados', theme:'finados', scope:'national'},
+    {date:new Date(year,10,15), name:'Proclamação da República', displayName:'Proclamação da República', theme:'republic', scope:'national'},
+    {date:new Date(year,10,20), name:'Dia Nacional de Zumbi e da Consciência Negra', displayName:'Consciência Negra', theme:'consciencia-negra', scope:'national'},
+    {date:new Date(year,11,25), name:'Natal', displayName:'Natal', theme:'christmas', scope:'national'},
   ];
 };
 
-const holidayFor = (date) => getBrazilHolidays(date.getFullYear()).find(h => fmtKey(h.date) === fmtKey(date)) || null;
+const getSalvadorHolidays = (year) => [
+  {date:new Date(year,2,29), name:'Aniversário da Fundação de Salvador', displayName:'Aniversário de Salvador', theme:'salvador-aniversario', scope:'municipal'},
+  {date:new Date(year,6,2), name:'Independência da Bahia', displayName:'Independência da Bahia', theme:'bahia-independence', scope:'state'},
+  {date:new Date(year,11,8), name:'Nossa Senhora da Conceição da Praia', displayName:'Conceição da Praia', theme:'conceicao-praia', scope:'municipal'},
+];
+
+const getAllHolidays = (year) => [...getBrazilHolidays(year), ...getSalvadorHolidays(year)];
+
+const holidayFor = (date) => getAllHolidays(date.getFullYear()).find(h => fmtKey(h.date) === fmtKey(date)) || null;
 const isHoliday = (date) => !!holidayFor(date);
 
 const saturdaysBetween = (start, end) => {
@@ -436,17 +444,21 @@ const IconFlag = (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 const IconSun = (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" {...p}><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>;
 const IconFlame = (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2c1 3-2 4-2 7a4 4 0 108 0c0-1.5-1-2.5-1-2.5.5 2-1 3-1 3 1-4-2-5-2-7.5-1 1-2 2.5-2 2.5s-.5-1.5 0-3z"/></svg>;
 const IconSpark = (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>;
+const IconBuilding = (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M4 21V7l6-4 6 4v14M4 21h16M9 9h.01M9 13h.01M14 9h.01M14 13h.01M9 21v-4h6v4"/></svg>;
 
 const HOLIDAY_ICON = {
   'new-year': IconSpark, 'christmas': IconSnowflake, 'easter': IconCross, 'tiradentes': IconSword,
   'work': IconGear, 'independence': IconFlag, 'aparecida': IconSun, 'finados': IconFlame,
   'republic': IconStar, 'consciencia-negra': IconStar,
+  'salvador-aniversario': IconBuilding, 'bahia-independence': IconFlag, 'conceicao-praia': IconSun,
 };
 const HOLIDAY_EFFECT = {
   'new-year': 'fireworks', 'christmas': 'snow', 'easter': 'rays', 'tiradentes': 'sparkle',
   'work': 'sparkle', 'independence': 'confetti', 'aparecida': 'rays', 'finados': 'petals',
   'republic': 'sparkle', 'consciencia-negra': 'confetti',
+  'salvador-aniversario': 'confetti', 'bahia-independence': 'fireworks', 'conceicao-praia': 'rays',
 };
+const SCOPE_LABEL = {national:'FERIADO NACIONAL', state:'FERIADO ESTADUAL', municipal:'FERIADO MUNICIPAL'};
 
 function HolidayFX({effect}) {
   if (effect === 'snow') return <div className="holiday-fx fx-snow">{Array.from({length:7}).map((_,i)=>
@@ -475,7 +487,7 @@ function HolidayCard({holiday, compact=false, detail=false}) {
     <span className="holiday-decor holiday-decor-left"><IconStar/></span>
     <span className="holiday-decor holiday-decor-right"><IconSpark/></span>
     <div className="holiday-content">
-      <span className="holiday-badge">FERIADO NACIONAL</span>
+      <span className="holiday-badge">{SCOPE_LABEL[holiday.scope] || 'FERIADO NACIONAL'}</span>
       <span className="holiday-icon"><Icon/></span>
       <strong>{holiday.displayName || holiday.name}</strong>
       {!compact&&<span className="holiday-official">{holiday.name}</span>}

@@ -137,6 +137,9 @@ html[data-theme="light"] .drawer-backdrop{background:rgba(31,49,61,.30)!importan
 .holiday-tiradentes{--holiday-color:#fb923c;background:linear-gradient(135deg,#241308,#11161d 65%,#1c1208)}
 .holiday-work{--holiday-color:#f97316;background:linear-gradient(135deg,#241307,#111820 65%,#1e160b)}
 .holiday-consciencia-negra{--holiday-color:#a855f7;background:linear-gradient(135deg,#1e1029,#10151d 60%,#21130d)}
+.holiday-salvador-aniversario{--holiday-color:#14b8a6;background:linear-gradient(135deg,#062420,#0c1a24 58%,#1c1806)}
+.holiday-bahia-independence{--holiday-color:#dc2626;background:linear-gradient(135deg,#2a0a0a,#0d1b2a 58%,#0a1420)}
+.holiday-conceicao-praia{--holiday-color:#60a5fa;background:linear-gradient(135deg,#0a1830,#0e1420 60%,#12203a)}
 @media(max-width:700px){.holiday-compact{min-height:68px}.holiday-compact .holiday-content{padding:6px 7px 7px}.holiday-compact .holiday-icon{width:14px;height:14px}.holiday-compact strong{font-size:10px}.holiday-compact .holiday-badge{font-size:6px}.holiday-compact .holiday-decor{width:12px;height:12px}.holiday-detail strong{font-size:23px}}
 
 /* V8.4 — partículas animadas por tema (sem emojis) */

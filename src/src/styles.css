@@ -69,3 +69,8 @@ aside{display:grid;align-content:start;gap:16px;position:sticky;top:18px}.panel{
 .calendar-card{isolation:isolate}.day{will-change:transform}.day:hover .event{transform:translateX(3px)}
 .panel{position:relative;overflow:hidden}.panel:before{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-70px;top:-70px;background:var(--glow);filter:blur(25px);pointer-events:none}
 @media(max-width:600px){.day-drawer{width:100vw!important}.status-grid,.people-grid{grid-template-columns:1fr}.drawer-actions{flex-wrap:wrap}.drawer-actions .MuiButton-root{flex:1}.drawer-head,.drawer-content{padding:16px}}
+
+/* Feriados nacionais */
+.day.holiday-day{background:repeating-linear-gradient(135deg,var(--day) 0 10px,var(--card-3) 10px 20px);}
+.event.holiday{--person:#f59e0b;color:#f6b94a;border-color:color-mix(in srgb,#f59e0b 42%,transparent);border-left-color:#f59e0b;background:color-mix(in srgb,#f59e0b 13%,var(--card));}
+.holiday-dot{background:#f59e0b!important;color:#f59e0b;display:grid;place-items:center;font-size:8px;}

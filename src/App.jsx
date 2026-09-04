@@ -26,11 +26,63 @@ const businessDaysBetween = (start, end) => {
   const cur = new Date(start);
   while (fmtKey(cur) !== fmtKey(end)) {
     cur.setDate(cur.getDate()+step);
-    if (isWeekday(cur)) count += step;
+    if (isWeekday(cur) && !isHoliday(cur)) count += step;
   }
   return count;
 };
-const saturdaysBetween = (start, end) => Math.floor(diffCalendarDays(end,start)/7);
+const easterSunday = (year) => {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+};
+
+const addDays = (date, days) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+};
+
+const getBrazilHolidays = (year) => {
+  const easter = easterSunday(year);
+  return [
+    {date:new Date(year,0,1), name:'Confraternização Universal'},
+    {date:addDays(easter,-2), name:'Paixão de Cristo'},
+    {date:new Date(year,3,21), name:'Tiradentes'},
+    {date:new Date(year,4,1), name:'Dia Mundial do Trabalho'},
+    {date:new Date(year,8,7), name:'Independência do Brasil'},
+    {date:new Date(year,9,12), name:'Nossa Senhora Aparecida'},
+    {date:new Date(year,10,2), name:'Finados'},
+    {date:new Date(year,10,15), name:'Proclamação da República'},
+    {date:new Date(year,10,20), name:'Dia Nacional de Zumbi e da Consciência Negra'},
+    {date:new Date(year,11,25), name:'Natal'},
+  ];
+};
+
+const holidayFor = (date) => getBrazilHolidays(date.getFullYear()).find(h => fmtKey(h.date) === fmtKey(date)) || null;
+const isHoliday = (date) => !!holidayFor(date);
+
+const saturdaysBetween = (start, end) => {
+  let count = 0;
+  const step = end >= start ? 1 : -1;
+  const cur = new Date(start);
+  while (fmtKey(cur) !== fmtKey(end)) {
+    cur.setDate(cur.getDate()+step);
+    if (cur.getDay() === 6 && !isHoliday(cur)) count += step;
+  }
+  return count;
+};
 
 const defaults = {
   team: [
@@ -176,7 +228,7 @@ function App() {
       if (value?.kind !== 'none') return;
       const date = parseKey(key);
       const valid = type === 'weekday' ? isWeekday(date) : date.getDay() === 6;
-      if (!valid || date > target) return;
+      if (!valid || isHoliday(date) || date > target) return;
       if (date < earliest) earliest = date;
     });
 
@@ -189,7 +241,7 @@ function App() {
     const cursor = new Date(earliest);
 
     while (cursor < target) {
-      if (isWeekday(cursor) && !isNoExtraOverride(cursor)) offset++;
+      if (isWeekday(cursor) && !isHoliday(cursor) && !isNoExtraOverride(cursor)) offset++;
       cursor.setDate(cursor.getDate() + 1);
     }
 
@@ -202,7 +254,7 @@ function App() {
     const cursor = new Date(earliest);
 
     while (cursor < target) {
-      if (cursor.getDay() === 6 && !isNoExtraOverride(cursor)) offset++;
+      if (cursor.getDay() === 6 && !isHoliday(cursor) && !isNoExtraOverride(cursor)) offset++;
       cursor.setDate(cursor.getDate() + 1);
     }
 
@@ -213,6 +265,8 @@ function App() {
     const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     date = normalizedDate;
     const day = date.getDay();
+    const holiday = holidayFor(date);
+    if (holiday) return {kind:'holiday', people:[], holidayName:holiday.name};
     const active = data.team.filter(p=>p.active);
     if (day === 0) return {kind:'off', people:[]};
 
@@ -233,6 +287,8 @@ function App() {
 
   function assignmentFor(date) {
     const key = fmtKey(date);
+    const holiday = holidayFor(date);
+    if (holiday) return {kind:'holiday', people:[], holidayName:holiday.name};
     const override = data.overrides[key];
     if (!override) return automaticFor(date);
     if (override.kind === 'none') return {kind:'none', people:[], note:override.note};
@@ -249,6 +305,7 @@ function App() {
   const monthLabel = view.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   const visibleMonthDays = cells.filter(d=>d.getMonth()===view.getMonth());
   const noExtraCount = visibleMonthDays.filter(d=>assignmentFor(d).kind==='none').length;
+  const holidayCount = visibleMonthDays.filter(d=>assignmentFor(d).kind==='holiday').length;
   const extraDaysCount = visibleMonthDays.filter(d=>assignmentFor(d).kind==='extra' && assignmentFor(d).people.length).length;
   const nextWorkDate = (() => {
     const d = new Date(today);
@@ -287,7 +344,7 @@ function App() {
         </div>
         <div className="summary-strip">
           <div><strong>{extraDaysCount}</strong><span>Dias com extra</span></div>
-          <div><strong>{noExtraCount}</strong><span>Sem hora extra</span></div>
+          <div><strong>{holidayCount}</strong><span>Feriados</span></div>
           <div><strong>{nextAssignment.people.map(p=>p.name).join(' + ') || '—'}</strong><span>Próximo da fila</span></div>
         </div>
         <div className="weekdays">{['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(x=><div key={x}>{x}</div>)}</div>
@@ -295,10 +352,10 @@ function App() {
           {cells.map(date=>{
             const asg=assignmentFor(date); const key=fmtKey(date);
             const outside=date.getMonth()!==view.getMonth(); const isToday=key===fmtKey(today);
-            return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''} ${asg.kind==='none'?'no-extra-day':''}`} onClick={()=>setSelected(date)}>
+            return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''} ${asg.kind==='none'?'no-extra-day':''} ${asg.kind==='holiday'?'holiday-day':''}`} onClick={()=>setSelected(date)}>
               <span className="day-number">{date.getDate()}</span>
               <div className="events">
-                {asg.kind==='none' ? <div className="event none"><DoNotDisturbAlt fontSize="inherit"/> Sem hora extra</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
+                {asg.kind==='holiday' ? <div className="event holiday"><span>★</span> {asg.holidayName}</div> : asg.kind==='none' ? <div className="event none"><DoNotDisturbAlt fontSize="inherit"/> Sem hora extra</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
               </div>
             </button>
           })}
@@ -308,8 +365,8 @@ function App() {
       <aside>
         <div className="panel hero-panel">
           <span className="eyebrow">HOJE · {ptDate(today)}</span>
-          <Typography variant="h5" fontWeight={900}>{todayAssignment.kind==='none'?'Sem hora extra':todayAssignment.people.map(p=>p.name).join(' + ') || 'Sem escala'}</Typography>
-          <Typography className="muted">{todayAssignment.kind==='none'?'A vez permanece com a mesma pessoa para o próximo dia útil.':'Escala ativa para hoje.'}</Typography>
+          <Typography variant="h5" fontWeight={900}>{todayAssignment.kind==='holiday'?todayAssignment.holidayName:todayAssignment.kind==='none'?'Sem hora extra':todayAssignment.people.map(p=>p.name).join(' + ') || 'Sem escala'}</Typography>
+          <Typography className="muted">{todayAssignment.kind==='holiday'?'Feriado nacional — não conta como dia de hora extra e não avança o rodízio.':todayAssignment.kind==='none'?'A vez permanece com a mesma pessoa para o próximo dia útil.':'Escala ativa para hoje.'}</Typography>
           <div className="access-pill">{user ? (isAdmin?'● Administrador conectado':'● Somente visualização') : '● Visualização pública'}</div>
         </div>
         <div className="panel">
@@ -369,6 +426,7 @@ function App() {
 }
 
 function DayDialog({open,date,data,assignment,admin,onClose,onSave,onReset}) {
+  const holiday = date ? holidayFor(date) : null;
   const [kind,setKind]=useState('extra'); const [people,setPeople]=useState([]); const [note,setNote]=useState('');
   useEffect(()=>{ if(open&&assignment){setKind(assignment.kind==='none'?'none':'extra');setPeople(assignment.people.map(p=>p.id));setNote(assignment.note||'')} },[open,assignment]);
   const toggle=(id)=>setPeople(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);
@@ -380,22 +438,23 @@ function DayDialog({open,date,data,assignment,admin,onClose,onSave,onReset}) {
       </Box>
       <Box className="drawer-content">
         {!admin&&<Alert severity="info">Você está no modo de visualização.</Alert>}
-        <Box className="drawer-section">
+        {holiday&&<Alert severity="warning"><strong>{holiday.name}</strong><br/>Feriado nacional. Este dia não é contado como hora extra e não avança o rodízio.</Alert>}
+        {!holiday&&<Box className="drawer-section">
           <Typography fontWeight={900}>Status do dia</Typography>
           <Box className="status-grid">
             <button className={`status-card ${kind==='extra'?'active':''}`} disabled={!admin} onClick={()=>setKind('extra')}><CheckCircle/><strong>Hora extra realizada</strong><span>Avança a fila normalmente</span></button>
             <button className={`status-card ${kind==='none'?'active':''}`} disabled={!admin} onClick={()=>setKind('none')}><DoNotDisturbAlt/><strong>Sem hora extra</strong><span>Mantém a vez para o próximo dia</span></button>
           </Box>
-        </Box>
-        {kind==='extra'&&<Box className="drawer-section"><Typography fontWeight={900}>Quem realizou?</Typography><div className="people-grid">{data.team.filter(p=>p.active).map(p=><button key={p.id} disabled={!admin} onClick={()=>toggle(p.id)} className={`person-choice ${people.includes(p.id)?'selected':''}`} style={{'--person':p.color}}><Avatar sx={{bgcolor:p.color,width:38,height:38}}>{p.name[0]}</Avatar><span>{p.name}</span><CheckCircle className="check"/></button>)}</div></Box>}
-        {kind==='none'&&<Alert severity="info">A mesma pessoa ou grupo continuará como próximo responsável.</Alert>}
+        </Box>}
+        {!holiday&&kind==='extra'&&<Box className="drawer-section"><Typography fontWeight={900}>Quem realizou?</Typography><div className="people-grid">{data.team.filter(p=>p.active).map(p=><button key={p.id} disabled={!admin} onClick={()=>toggle(p.id)} className={`person-choice ${people.includes(p.id)?'selected':''}`} style={{'--person':p.color}}><Avatar sx={{bgcolor:p.color,width:38,height:38}}>{p.name[0]}</Avatar><span>{p.name}</span><CheckCircle className="check"/></button>)}</div></Box>}
+        {!holiday&&kind==='none'&&<Alert severity="info">A mesma pessoa ou grupo continuará como próximo responsável.</Alert>}
         <Box className="drawer-section"><TextField fullWidth multiline minRows={4} label="Observação" placeholder="Ex.: equipe liberada no horário normal" value={note} onChange={e=>setNote(e.target.value)} disabled={!admin}/></Box>
       </Box>
       <Box className="drawer-actions">
-        {admin&&<Button startIcon={<RestartAlt/>} onClick={onReset}>Restaurar automático</Button>}
+        {admin&&!holiday&&<Button startIcon={<RestartAlt/>} onClick={onReset}>Restaurar automático</Button>}
         <Box sx={{flex:1}}/>
         <Button onClick={onClose}>Cancelar</Button>
-        {admin&&<Button variant="contained" startIcon={<Save/>} disabled={kind==='extra'&&!people.length} onClick={()=>onSave({kind,people:kind==='none'?[]:people,note})}>Salvar alteração</Button>}
+        {admin&&!holiday&&<Button variant="contained" startIcon={<Save/>} disabled={kind==='extra'&&!people.length} onClick={()=>onSave({kind,people:kind==='none'?[]:people,note})}>Salvar alteração</Button>}
       </Box>
     </Box>
   </Drawer>

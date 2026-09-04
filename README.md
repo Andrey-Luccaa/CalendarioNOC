@@ -37,3 +37,11 @@ Administradores principais protegidos:
 - viniciusnex43@gmail.com
 
 Os administradores adicionados pelo painel ficam na coleção `admins` do Firestore e podem ser removidos pelo mesmo painel.
+
+
+## Feriados nacionais do Brasil
+
+- O calendário identifica automaticamente os feriados nacionais, inclusive os móveis ligados à Páscoa.
+- Feriados não contam como dia de hora extra e não avançam o rodízio.
+- A célula do calendário exibe o nome do feriado e o painel lateral informa a regra.
+- Carnaval e Corpus Christi não são incluídos como feriados nacionais, pois não são feriados nacionais por lei federal em todo o país.

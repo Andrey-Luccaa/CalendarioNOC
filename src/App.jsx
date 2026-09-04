@@ -289,6 +289,7 @@ function App() {
     const key = fmtKey(date);
     const holiday = holidayFor(date);
     if (holiday) return {kind:'holiday', people:[], holidayName:holiday.name};
+    if (date.getDay() === 0) return {kind:'off', people:[]};
     const override = data.overrides[key];
     if (!override) return automaticFor(date);
     if (override.kind === 'none') return {kind:'none', people:[], note:override.note};
@@ -352,10 +353,11 @@ function App() {
           {cells.map(date=>{
             const asg=assignmentFor(date); const key=fmtKey(date);
             const outside=date.getMonth()!==view.getMonth(); const isToday=key===fmtKey(today);
-            return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''} ${asg.kind==='none'?'no-extra-day':''} ${asg.kind==='holiday'?'holiday-day':''}`} onClick={()=>setSelected(date)}>
+            const isSunday=date.getDay()===0;
+            return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''} ${asg.kind==='none'?'no-extra-day':''} ${asg.kind==='holiday'?'holiday-day':''} ${asg.kind==='off'?'day-off':''}`} onClick={()=>{ if(!isSunday) setSelected(date); }}>
               <span className="day-number">{date.getDate()}</span>
               <div className="events">
-                {asg.kind==='holiday' ? <HolidayCard holiday={holidayFor(date)} compact/> : asg.kind==='none' ? <div className="event none"><DoNotDisturbAlt fontSize="inherit"/> Sem hora extra</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
+                {asg.kind==='holiday' ? <HolidayCard holiday={holidayFor(date)} compact/> : asg.kind==='none' ? <div className="event none"><DoNotDisturbAlt fontSize="inherit"/> Sem hora extra</div> : asg.kind==='off' ? <div className="event off">Não é dia útil</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
               </div>
             </button>
           })}

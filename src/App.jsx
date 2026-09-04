@@ -57,16 +57,16 @@ const addDays = (date, days) => {
 const getBrazilHolidays = (year) => {
   const easter = easterSunday(year);
   return [
-    {date:new Date(year,0,1), name:'Confraternização Universal'},
-    {date:addDays(easter,-2), name:'Paixão de Cristo'},
-    {date:new Date(year,3,21), name:'Tiradentes'},
-    {date:new Date(year,4,1), name:'Dia Mundial do Trabalho'},
-    {date:new Date(year,8,7), name:'Independência do Brasil'},
-    {date:new Date(year,9,12), name:'Nossa Senhora Aparecida'},
-    {date:new Date(year,10,2), name:'Finados'},
-    {date:new Date(year,10,15), name:'Proclamação da República'},
-    {date:new Date(year,10,20), name:'Dia Nacional de Zumbi e da Consciência Negra'},
-    {date:new Date(year,11,25), name:'Natal'},
+    {date:new Date(year,0,1), name:'Confraternização Universal', displayName:'Ano Novo', theme:'new-year', emoji:'🎆'},
+    {date:addDays(easter,-2), name:'Paixão de Cristo', displayName:'Paixão de Cristo', theme:'easter', emoji:'✝️'},
+    {date:new Date(year,3,21), name:'Tiradentes', displayName:'Tiradentes', theme:'tiradentes', emoji:'⚔️'},
+    {date:new Date(year,4,1), name:'Dia Mundial do Trabalho', displayName:'Dia do Trabalho', theme:'work', emoji:'🛠️'},
+    {date:new Date(year,8,7), name:'Independência do Brasil', displayName:'Independência do Brasil', theme:'independence', emoji:'🇧🇷'},
+    {date:new Date(year,9,12), name:'Nossa Senhora Aparecida', displayName:'Nossa Senhora Aparecida', theme:'aparecida', emoji:'🙏'},
+    {date:new Date(year,10,2), name:'Finados', displayName:'Finados', theme:'finados', emoji:'🕯️'},
+    {date:new Date(year,10,15), name:'Proclamação da República', displayName:'Proclamação da República', theme:'republic', emoji:'🇧🇷'},
+    {date:new Date(year,10,20), name:'Dia Nacional de Zumbi e da Consciência Negra', displayName:'Consciência Negra', theme:'consciencia-negra', emoji:'✊🏿'},
+    {date:new Date(year,11,25), name:'Natal', displayName:'Natal', theme:'christmas', emoji:'🎄'},
   ];
 };
 
@@ -355,7 +355,7 @@ function App() {
             return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''} ${asg.kind==='none'?'no-extra-day':''} ${asg.kind==='holiday'?'holiday-day':''}`} onClick={()=>setSelected(date)}>
               <span className="day-number">{date.getDate()}</span>
               <div className="events">
-                {asg.kind==='holiday' ? <div className="event holiday"><span>★</span> {asg.holidayName}</div> : asg.kind==='none' ? <div className="event none"><DoNotDisturbAlt fontSize="inherit"/> Sem hora extra</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
+                {asg.kind==='holiday' ? <HolidayCard holiday={holidayFor(date)} compact/> : asg.kind==='none' ? <div className="event none"><DoNotDisturbAlt fontSize="inherit"/> Sem hora extra</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
               </div>
             </button>
           })}
@@ -425,6 +425,23 @@ function App() {
   </Box></ThemeProvider>
 }
 
+function HolidayCard({holiday, compact=false, detail=false}) {
+  if (!holiday) return null;
+  return <div className={`holiday-card holiday-${holiday.theme} ${compact?'holiday-compact':''} ${detail?'holiday-detail':''}`}>
+    <div className="holiday-glow"/>
+    <div className="holiday-decor holiday-decor-left">{holiday.theme==='christmas'?'🎁':holiday.theme==='new-year'?'✨':holiday.theme==='finados'?'🌸':'★'}</div>
+    <div className="holiday-decor holiday-decor-right">{holiday.theme==='christmas'?'⭐':holiday.theme==='new-year'?'🎆':holiday.theme==='independence'?'🇧🇷':'✦'}</div>
+    <div className="holiday-content">
+      <span className="holiday-badge">FERIADO NACIONAL</span>
+      <span className="holiday-emoji">{holiday.emoji}</span>
+      <strong>{holiday.displayName || holiday.name}</strong>
+      {!compact&&<span className="holiday-official">{holiday.name}</span>}
+      {detail&&<div className="holiday-rule"><span>✓</span> Não conta como dia de hora extra</div>}
+      {detail&&<div className="holiday-rule"><span>✓</span> Não avança o rodízio</div>}
+    </div>
+  </div>;
+}
+
 function DayDialog({open,date,data,assignment,admin,onClose,onSave,onReset}) {
   const holiday = date ? holidayFor(date) : null;
   const [kind,setKind]=useState('extra'); const [people,setPeople]=useState([]); const [note,setNote]=useState('');
@@ -438,7 +455,7 @@ function DayDialog({open,date,data,assignment,admin,onClose,onSave,onReset}) {
       </Box>
       <Box className="drawer-content">
         {!admin&&<Alert severity="info">Você está no modo de visualização.</Alert>}
-        {holiday&&<Alert severity="warning"><strong>{holiday.name}</strong><br/>Feriado nacional. Este dia não é contado como hora extra e não avança o rodízio.</Alert>}
+        {holiday&&<HolidayCard holiday={holiday} detail/>}
         {!holiday&&<Box className="drawer-section">
           <Typography fontWeight={900}>Status do dia</Typography>
           <Box className="status-grid">

@@ -93,3 +93,35 @@ html[data-theme="light"] .drawer-backdrop{background:rgba(31,49,61,.30)!importan
 /* Gerenciamento de administradores */
 .admin-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border-soft);border-radius:14px;background:var(--card-2)}
 .admin-row:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--border));transform:translateY(-1px);box-shadow:0 10px 25px var(--glow)}
+
+/* V8.3 — feriados caracterizados */
+.holiday-day{
+  background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--holiday-color,#eab308) 12%,transparent),transparent 58%),var(--day)!important;
+}
+.holiday-day:hover{box-shadow:inset 0 0 0 1px var(--holiday-color,#eab308),0 18px 42px color-mix(in srgb,var(--holiday-color,#eab308) 18%,transparent)!important}
+.holiday-card{--holiday-color:#f59e0b;position:relative;overflow:hidden;border:1px solid color-mix(in srgb,var(--holiday-color) 58%,var(--border));border-radius:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--holiday-color) 28%,var(--card-2)),var(--card));box-shadow:inset 0 1px rgba(255,255,255,.09),0 8px 24px color-mix(in srgb,var(--holiday-color) 13%,transparent);min-height:94px;color:var(--text)}
+.holiday-card:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 15%,rgba(255,255,255,.06) 48%,transparent 80%);transform:translateX(-100%);transition:transform .6s ease}.holiday-card:hover:before{transform:translateX(100%)}
+.holiday-glow{position:absolute;width:100px;height:100px;border-radius:50%;right:-35px;top:-45px;background:var(--holiday-color);opacity:.18;filter:blur(18px)}
+.holiday-content{position:relative;z-index:2;padding:10px 11px 11px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+.holiday-badge{font-size:8px;line-height:1;font-weight:950;letter-spacing:.1em;color:color-mix(in srgb,var(--holiday-color) 90%,white);background:color-mix(in srgb,var(--holiday-color) 15%,transparent);border:1px solid color-mix(in srgb,var(--holiday-color) 35%,transparent);border-radius:999px;padding:4px 6px}
+.holiday-emoji{font-size:20px;line-height:1;margin-top:2px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.35))}
+.holiday-card strong{font-size:13px;line-height:1.16;font-weight:950;letter-spacing:-.02em;white-space:normal;overflow-wrap:anywhere;text-align:left}
+.holiday-official{font-size:9px;line-height:1.2;color:var(--muted);white-space:normal;overflow-wrap:anywhere}
+.holiday-decor{position:absolute;z-index:1;font-size:19px;opacity:.75;pointer-events:none}.holiday-decor-left{left:7px;bottom:4px}.holiday-decor-right{right:7px;bottom:4px}
+.holiday-compact{min-height:92px}
+.holiday-compact .holiday-content{padding:8px 9px 10px;padding-right:22px}.holiday-compact .holiday-badge{font-size:7px}.holiday-compact .holiday-emoji{font-size:17px}.holiday-compact strong{font-size:12px;line-height:1.15}
+.holiday-detail{min-height:230px;padding:0}.holiday-detail .holiday-content{padding:22px 20px 20px;gap:8px}.holiday-detail .holiday-badge{font-size:9px;padding:5px 8px}.holiday-detail .holiday-emoji{font-size:42px;margin-top:5px}.holiday-detail strong{font-size:28px;line-height:1.08;max-width:100%}.holiday-detail .holiday-official{font-size:11px}.holiday-rule{margin-top:4px;padding:9px 11px;border-radius:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.22);font-size:11px;font-weight:800;width:100%}.holiday-rule span{color:#22c55e;margin-right:6px}
+.holiday-new-year{--holiday-color:#facc15;background:linear-gradient(135deg,#201b08,#111827 62%,#17102a)}
+.holiday-new-year .holiday-decor{filter:drop-shadow(0 0 8px rgba(250,204,21,.55))}
+.holiday-christmas{--holiday-color:#ef4444;background:linear-gradient(135deg,#1d0c0c,#102019 58%,#17120a)}
+.holiday-christmas .holiday-glow{background:#22c55e}.holiday-christmas .holiday-decor-left{font-size:22px}.holiday-christmas .holiday-decor-right{font-size:21px}
+.holiday-independence{--holiday-color:#22c55e;background:linear-gradient(135deg,#082218,#071b2a 55%,#1b1706)}
+.holiday-independence .holiday-decor-left{color:#22c55e}.holiday-independence .holiday-decor-right{color:#facc15}
+.holiday-republic{--holiday-color:#38bdf8;background:linear-gradient(135deg,#071d2a,#0b1725 60%,#092218)}
+.holiday-aparecida{--holiday-color:#22c55e;background:linear-gradient(135deg,#082318,#101b13 60%,#162414)}
+.holiday-finados{--holiday-color:#a855f7;background:linear-gradient(135deg,#1b1024,#11131c 65%,#21131a)}
+.holiday-easter{--holiday-color:#fbbf24;background:linear-gradient(135deg,#251b0a,#17141d 65%,#241414)}
+.holiday-tiradentes{--holiday-color:#fb923c;background:linear-gradient(135deg,#241308,#11161d 65%,#1c1208)}
+.holiday-work{--holiday-color:#f97316;background:linear-gradient(135deg,#241307,#111820 65%,#1e160b)}
+.holiday-consciencia-negra{--holiday-color:#a855f7;background:linear-gradient(135deg,#1e1029,#10151d 60%,#21130d)}
+@media(max-width:700px){.holiday-compact{min-height:68px}.holiday-compact .holiday-content{padding:6px 7px 7px}.holiday-compact .holiday-emoji{font-size:14px}.holiday-compact strong{font-size:10px}.holiday-compact .holiday-badge{font-size:6px}.holiday-compact .holiday-decor{font-size:13px}.holiday-detail strong{font-size:23px}}

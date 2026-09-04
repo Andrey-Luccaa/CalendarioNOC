@@ -74,3 +74,788 @@ aside{display:grid;align-content:start;gap:16px;position:sticky;top:18px}.panel{
 .day.holiday-day{background:repeating-linear-gradient(135deg,var(--day) 0 10px,var(--card-3) 10px 20px);}
 .event.holiday{--person:#f59e0b;color:#f6b94a;border-color:color-mix(in srgb,#f59e0b 42%,transparent);border-left-color:#f59e0b;background:color-mix(in srgb,#f59e0b 13%,var(--card));}
 .holiday-dot{background:#f59e0b!important;color:#f59e0b;display:grid;place-items:center;font-size:8px;}
+
+/* =========================================================
+   FERIADOS TEMÁTICOS — V9
+   ========================================================= */
+
+.event.holiday {
+  position: relative;
+  min-height: 42px;
+  padding: 8px 9px;
+  overflow: hidden;
+
+  display: block;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  text-overflow: clip;
+
+  border-left: 4px solid #f59e0b;
+
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, #f59e0b 16%, var(--card)),
+      color-mix(in srgb, #f59e0b 5%, var(--card))
+    );
+
+  color: #ffd166;
+
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.06),
+    0 5px 18px rgba(245,158,11,.08);
+
+  transition:
+    transform .25s ease,
+    box-shadow .25s ease,
+    border-color .25s ease;
+}
+
+.event.holiday:hover {
+  transform: translateY(-2px) scale(1.015);
+
+  box-shadow:
+    0 8px 24px rgba(245,158,11,.18),
+    inset 0 1px rgba(255,255,255,.08);
+}
+
+.holiday-content {
+  position: relative;
+  z-index: 5;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+
+  width: 100%;
+}
+
+.holiday-symbol {
+  flex: 0 0 auto;
+  font-size: 14px;
+  line-height: 1.2;
+
+  text-shadow:
+    0 0 8px currentColor,
+    0 0 16px currentColor;
+
+  animation: holiday-symbol-pulse 2s ease-in-out infinite;
+}
+
+.holiday-name {
+  min-width: 0;
+
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 900;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   ANO NOVO — FOGOS
+   ========================================================= */
+
+.holiday-new-year {
+  --holiday-main: #fbbf24;
+  border-left-color: #fbbf24 !important;
+
+  background:
+    radial-gradient(
+      circle at 80% 15%,
+      rgba(251,191,36,.20),
+      transparent 32%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(251,191,36,.12),
+      var(--card)
+    ) !important;
+
+  color: #ffe08a !important;
+}
+
+.new-year-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.firework {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+
+  animation:
+    firework-launch 3.8s ease-in-out infinite;
+}
+
+.firework-one {
+  left: 72%;
+  top: 30%;
+}
+
+.firework-two {
+  left: 48%;
+  top: 48%;
+  animation-delay: 1.25s;
+}
+
+.firework-three {
+  left: 90%;
+  top: 48%;
+  animation-delay: 2.25s;
+}
+
+.firework i {
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  width: 2px;
+  height: 16px;
+
+  transform-origin: 50% 100%;
+
+  background: linear-gradient(
+    to top,
+    transparent,
+    #fde68a
+  );
+
+  opacity: 0;
+
+  animation:
+    firework-ray 3.8s ease-out infinite;
+}
+
+.firework i:nth-child(1) { transform: rotate(0deg); }
+.firework i:nth-child(2) { transform: rotate(45deg); }
+.firework i:nth-child(3) { transform: rotate(90deg); }
+.firework i:nth-child(4) { transform: rotate(135deg); }
+.firework i:nth-child(5) { transform: rotate(180deg); }
+.firework i:nth-child(6) { transform: rotate(225deg); }
+.firework i:nth-child(7) { transform: rotate(270deg); }
+.firework i:nth-child(8) { transform: rotate(315deg); }
+
+.firework i:nth-child(2n) {
+  animation-delay: .08s;
+}
+
+@keyframes firework-launch {
+  0%, 45% {
+    transform: scale(.15);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  65% {
+    transform: scale(1.15);
+    opacity: .9;
+  }
+
+  82%, 100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes firework-ray {
+  0%, 42% {
+    opacity: 0;
+    height: 4px;
+  }
+
+  52% {
+    opacity: 1;
+    height: 15px;
+  }
+
+  75% {
+    opacity: .45;
+    height: 20px;
+  }
+
+  100% {
+    opacity: 0;
+    height: 24px;
+  }
+}
+
+/* =========================================================
+   NATAL — NEVE
+   ========================================================= */
+
+.holiday-christmas {
+  border-left-color: #dbeafe !important;
+
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(219,234,254,.22),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.08),
+      var(--card)
+    ) !important;
+
+  color: #eaf6ff !important;
+}
+
+.snow-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.snow-effect span {
+  position: absolute;
+
+  top: -8px;
+  left: var(--snow-left);
+
+  width: 4px;
+  height: 4px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,.95);
+
+  box-shadow:
+    0 0 5px rgba(255,255,255,.8);
+
+  animation:
+    snow-fall 3.8s linear infinite;
+
+  animation-delay: var(--snow-delay);
+}
+
+.snow-effect span:nth-child(3n) {
+  width: 3px;
+  height: 3px;
+}
+
+.snow-effect span:nth-child(4n) {
+  width: 6px;
+  height: 6px;
+  opacity: .65;
+}
+
+@keyframes snow-fall {
+  0% {
+    transform: translate3d(0,-8px,0) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: .95;
+  }
+
+  50% {
+    transform: translate3d(7px,35px,0) rotate(180deg);
+  }
+
+  100% {
+    transform: translate3d(-8px,85px,0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   PAIXÃO DE CRISTO — BRILHO SUAVE
+   ========================================================= */
+
+.holiday-easter-passion {
+  border-left-color: #a78bfa !important;
+
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(167,139,250,.16),
+      transparent 60%
+    ),
+    var(--card) !important;
+
+  color: #d8ccff !important;
+}
+
+.passion-effect {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.passion-effect span {
+  position: absolute;
+
+  width: 4px;
+  height: 4px;
+
+  border-radius: 50%;
+  background: #c4b5fd;
+
+  animation: passion-float 4s ease-in-out infinite;
+}
+
+.passion-effect span:nth-child(1) {
+  left: 20%;
+  bottom: -5px;
+}
+
+.passion-effect span:nth-child(2) {
+  left: 60%;
+  bottom: -8px;
+  animation-delay: 1.2s;
+}
+
+.passion-effect span:nth-child(3) {
+  left: 85%;
+  bottom: -5px;
+  animation-delay: 2.1s;
+}
+
+@keyframes passion-float {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: .8;
+  }
+
+  100% {
+    transform: translateY(-70px);
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   DIA DO TRABALHO — PARTÍCULAS
+   ========================================================= */
+
+.holiday-workers {
+  border-left-color: #38bdf8 !important;
+  color: #a5e7ff !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(56,189,248,.12),
+      var(--card)
+    ) !important;
+}
+
+.workers-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.workers-effect span {
+  position: absolute;
+
+  width: 3px;
+  height: 3px;
+
+  border-radius: 50%;
+  background: #38bdf8;
+
+  animation: workers-particle 3s linear infinite;
+}
+
+.workers-effect span:nth-child(1) { left: 10%; animation-delay: 0s; }
+.workers-effect span:nth-child(2) { left: 25%; animation-delay: .4s; }
+.workers-effect span:nth-child(3) { left: 40%; animation-delay: .8s; }
+.workers-effect span:nth-child(4) { left: 55%; animation-delay: 1.2s; }
+.workers-effect span:nth-child(5) { left: 70%; animation-delay: 1.6s; }
+.workers-effect span:nth-child(6) { left: 82%; animation-delay: 2s; }
+.workers-effect span:nth-child(7) { left: 90%; animation-delay: .6s; }
+.workers-effect span:nth-child(8) { left: 48%; animation-delay: 2.3s; }
+
+@keyframes workers-particle {
+  from {
+    transform: translateY(45px);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: .8;
+  }
+
+  to {
+    transform: translateY(-35px);
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   INDEPENDÊNCIA — PARTÍCULAS VERDE / AMARELO / AZUL
+   ========================================================= */
+
+.holiday-independence {
+  border-left-color: #facc15 !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34,197,94,.12),
+      rgba(250,204,21,.08),
+      rgba(37,99,235,.10),
+      var(--card)
+    ) !important;
+
+  color: #fde68a !important;
+}
+
+.independence-effect {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.independence-effect span {
+  position: absolute;
+
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  animation: flag-particles 3.5s linear infinite;
+}
+
+.independence-effect span:nth-child(3n) {
+  background: #facc15;
+}
+
+.independence-effect span:nth-child(4n) {
+  background: #2563eb;
+}
+
+.independence-effect span:nth-child(1) { left: 5%; animation-delay: 0s; }
+.independence-effect span:nth-child(2) { left: 18%; animation-delay: .4s; }
+.independence-effect span:nth-child(3) { left: 30%; animation-delay: .8s; }
+.independence-effect span:nth-child(4) { left: 43%; animation-delay: 1.2s; }
+.independence-effect span:nth-child(5) { left: 55%; animation-delay: 1.6s; }
+.independence-effect span:nth-child(6) { left: 68%; animation-delay: 2s; }
+.independence-effect span:nth-child(7) { left: 80%; animation-delay: 2.4s; }
+.independence-effect span:nth-child(8) { left: 93%; animation-delay: 2.8s; }
+
+@keyframes flag-particles {
+  0% {
+    transform: translateY(50px) scale(.4);
+    opacity: 0;
+  }
+
+  25% {
+    opacity: .8;
+  }
+
+  100% {
+    transform: translateY(-45px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   NOSSA SENHORA APARECIDA — HALO
+   ========================================================= */
+
+.holiday-aparecida {
+  border-left-color: #60a5fa !important;
+
+  color: #bfdbfe !important;
+
+  background:
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(96,165,250,.22),
+      transparent 45%
+    ),
+    var(--card) !important;
+}
+
+/* =========================================================
+   FINADOS — NÉVOA
+   ========================================================= */
+
+.holiday-all-souls {
+  border-left-color: #64748b !important;
+  color: #cbd5e1 !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(100,116,139,.10),
+      var(--card)
+    ) !important;
+}
+
+.fog-effect {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fog-effect span {
+  position: absolute;
+
+  width: 100px;
+  height: 25px;
+
+  border-radius: 50%;
+
+  background: rgba(148,163,184,.08);
+
+  filter: blur(8px);
+
+  animation: fog-move 6s ease-in-out infinite alternate;
+}
+
+.fog-effect span:first-child {
+  left: -30px;
+  top: 20px;
+}
+
+.fog-effect span:last-child {
+  right: -40px;
+  bottom: 5px;
+  animation-delay: 2s;
+}
+
+@keyframes fog-move {
+  from {
+    transform: translateX(-20px);
+    opacity: .2;
+  }
+
+  to {
+    transform: translateX(45px);
+    opacity: .7;
+  }
+}
+
+/* =========================================================
+   PROCLAMAÇÃO DA REPÚBLICA
+   ========================================================= */
+
+.holiday-republic {
+  border-left-color: #94a3b8 !important;
+  color: #dbeafe !important;
+}
+
+.republic-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.republic-effect span {
+  position: absolute;
+
+  width: 2px;
+  height: 2px;
+
+  background: #cbd5e1;
+  border-radius: 50%;
+
+  animation: republic-particle 3s ease-in-out infinite;
+}
+
+.republic-effect span:nth-child(1) { left: 10%; animation-delay: .1s; }
+.republic-effect span:nth-child(2) { left: 20%; animation-delay: .7s; }
+.republic-effect span:nth-child(3) { left: 30%; animation-delay: 1.2s; }
+.republic-effect span:nth-child(4) { left: 40%; animation-delay: .3s; }
+.republic-effect span:nth-child(5) { left: 50%; animation-delay: 1.7s; }
+.republic-effect span:nth-child(6) { left: 60%; animation-delay: .9s; }
+.republic-effect span:nth-child(7) { left: 70%; animation-delay: 2s; }
+.republic-effect span:nth-child(8) { left: 80%; animation-delay: .5s; }
+.republic-effect span:nth-child(9) { left: 90%; animation-delay: 1.4s; }
+.republic-effect span:nth-child(10) { left: 96%; animation-delay: 2.4s; }
+
+@keyframes republic-particle {
+  0%, 100% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+
+  50% {
+    transform: translateY(-25px);
+    opacity: .8;
+  }
+}
+
+/* =========================================================
+   CONSCIÊNCIA NEGRA
+   ========================================================= */
+
+.holiday-black-consciousness {
+  border-left-color: #c084fc !important;
+
+  color: #e9d5ff !important;
+
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(192,132,252,.15),
+      transparent 45%
+    ),
+    var(--card) !important;
+}
+
+.consciousness-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.consciousness-effect span {
+  position: absolute;
+
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: #c084fc;
+
+  box-shadow: 0 0 12px rgba(192,132,252,.7);
+
+  animation: consciousness-particle 4s ease-in-out infinite;
+}
+
+.consciousness-effect span:nth-child(1) {
+  left: 20%;
+  bottom: 0;
+}
+
+.consciousness-effect span:nth-child(2) {
+  left: 55%;
+  bottom: 0;
+  animation-delay: 1.4s;
+}
+
+.consciousness-effect span:nth-child(3) {
+  left: 85%;
+  bottom: 0;
+  animation-delay: 2.5s;
+}
+
+@keyframes consciousness-particle {
+  0% {
+    transform: translateY(20px) scale(.4);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-65px) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   FERiados GENÉRICOS
+   ========================================================= */
+
+.default-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.default-effect span {
+  position: absolute;
+
+  width: 4px;
+  height: 4px;
+
+  right: 15%;
+  top: 20%;
+
+  border-radius: 50%;
+  background: #f59e0b;
+
+  box-shadow: 0 0 12px #f59e0b;
+
+  animation: default-holiday-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes default-holiday-pulse {
+  0%, 100% {
+    transform: scale(.4);
+    opacity: .2;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+}
+
+@keyframes holiday-symbol-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: .75;
+  }
+
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+   MELHORIA DO CARD NO CELULAR
+   ========================================================= */
+
+@media(max-width:700px) {
+  .event.holiday {
+    min-height: 36px;
+    padding: 5px 6px;
+  }
+
+  .holiday-name {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  .holiday-symbol {
+    font-size: 11px;
+  }
+}
+
+/* =========================================================
+   REDUÇÃO DE MOVIMENTO
+   ========================================================= */
+
+@media(prefers-reduced-motion:reduce) {
+  .holiday-effect *,
+  .holiday-symbol {
+    animation: none !important;
+  }
+}

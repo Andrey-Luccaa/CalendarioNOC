@@ -128,6 +128,110 @@ function mergeData(value) {
   };
 }
 
+const getHolidayClass = (name) => {
+  const classes = {
+    'Confraternização Universal': 'new-year',
+    'Paixão de Cristo': 'easter-passion',
+    'Tiradentes': 'tiradentes',
+    'Dia Mundial do Trabalho': 'workers',
+    'Independência do Brasil': 'independence',
+    'Nossa Senhora Aparecida': 'aparecida',
+    'Finados': 'all-souls',
+    'Proclamação da República': 'republic',
+    'Dia Nacional de Zumbi e da Consciência Negra': 'black-consciousness',
+    'Natal': 'christmas',
+  };
+
+  return classes[name] || 'default-holiday';
+};
+
+const HolidayEffects = ({ type }) => {
+  if (type === 'new-year') {
+    return (
+      <div className="holiday-effect new-year-effect" aria-hidden="true">
+        <span className="firework firework-one">
+          <i/><i/><i/><i/><i/><i/><i/><i/>
+        </span>
+        <span className="firework firework-two">
+          <i/><i/><i/><i/><i/><i/><i/><i/>
+        </span>
+        <span className="firework firework-three">
+          <i/><i/><i/><i/><i/><i/><i/><i/>
+        </span>
+      </div>
+    );
+  }
+
+  if (type === 'christmas') {
+    return (
+      <div className="holiday-effect snow-effect" aria-hidden="true">
+        {Array.from({ length: 18 }, (_, i) => (
+          <span key={i} style={{ '--snow-delay': `${(i % 9) * 0.7}s`, '--snow-left': `${(i * 17) % 100}%` }} />
+        ))}
+      </div>
+    );
+  }
+
+  if (type === 'easter-passion') {
+    return (
+      <div className="holiday-effect passion-effect" aria-hidden="true">
+        <span/>
+        <span/>
+        <span/>
+      </div>
+    );
+  }
+
+  if (type === 'workers') {
+    return (
+      <div className="holiday-effect workers-effect" aria-hidden="true">
+        {Array.from({ length: 8 }, (_, i) => <span key={i} />)}
+      </div>
+    );
+  }
+
+  if (type === 'independence') {
+    return (
+      <div className="holiday-effect independence-effect" aria-hidden="true">
+        {Array.from({ length: 12 }, (_, i) => <span key={i} />)}
+      </div>
+    );
+  }
+
+  if (type === 'all-souls') {
+    return (
+      <div className="holiday-effect fog-effect" aria-hidden="true">
+        <span/>
+        <span/>
+      </div>
+    );
+  }
+
+  if (type === 'republic') {
+    return (
+      <div className="holiday-effect republic-effect" aria-hidden="true">
+        {Array.from({ length: 10 }, (_, i) => <span key={i} />)}
+      </div>
+    );
+  }
+
+  if (type === 'black-consciousness') {
+    return (
+      <div className="holiday-effect consciousness-effect" aria-hidden="true">
+        <span/>
+        <span/>
+        <span/>
+      </div>
+    );
+  }
+
+  return (
+    <div className="holiday-effect default-effect" aria-hidden="true">
+      <span/>
+    </div>
+  );
+};
+
 function App() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -331,7 +435,43 @@ function App() {
             return <button key={key} className={`day ${outside?'outside':''} ${isToday?'today':''} ${asg.kind==='none'?'no-extra-day':''} ${asg.kind==='holiday'?'holiday-day':''}`} onClick={()=>setSelected(date)}>
               <span className="day-number">{date.getDate()}</span>
               <div className="events">
-                {asg.kind==='holiday' ? <div className="event holiday"><span>★</span> {asg.holidayName}</div> : asg.kind==='none' ? <div className="event none"><DoNotDisturbAlt fontSize="inherit"/> Sem hora extra</div> : asg.people.map(p=><div key={p.id} className="event" style={{'--person':p.color}}>{p.name}</div>)}
+                {asg.kind === 'holiday' ? (
+  <div
+    className={`event holiday holiday-${getHolidayClass(asg.holidayName)}`}
+    title={asg.holidayName}
+  >
+    <HolidayEffects type={getHolidayClass(asg.holidayName)} />
+
+    <span className="holiday-content">
+      <span className="holiday-symbol">
+        {getHolidayClass(asg.holidayName) === 'new-year' ? '✦' :
+         getHolidayClass(asg.holidayName) === 'christmas' ? '✧' :
+         getHolidayClass(asg.holidayName) === 'independence' ? '✦' :
+         getHolidayClass(asg.holidayName) === 'all-souls' ? '◌' :
+         '✦'}
+      </span>
+
+      <span className="holiday-name">
+        {asg.holidayName}
+      </span>
+    </span>
+  </div>
+) : asg.kind === 'none' ? (
+  <div className="event none">
+    <DoNotDisturbAlt fontSize="inherit"/>
+    Sem hora extra
+  </div>
+) : (
+  asg.people.map(p => (
+    <div
+      key={p.id}
+      className="event"
+      style={{ '--person': p.color }}
+    >
+      {p.name}
+    </div>
+  ))
+)}
               </div>
             </button>
           })}

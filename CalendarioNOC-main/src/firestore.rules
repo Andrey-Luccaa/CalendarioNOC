@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+
+    function normalizedEmail() {
+      return request.auth.token.email;
+    }
+
+    function isBootstrapAdmin() {
+      return signedIn() && normalizedEmail() in [
+        'andreyluccadantas@gmail.com'
+      ];
+    }
+
+    function isDynamicAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(normalizedEmail()));
+    }
+
+    function isAdmin() {
+      return isBootstrapAdmin() || isDynamicAdmin();
+    }
+
+    match /admins/{email} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -57,16 +57,16 @@ const addDays = (date, days) => {
 const getBrazilHolidays = (year) => {
   const easter = easterSunday(year);
   return [
-    {date:new Date(year,0,1), name:'Confraternização Universal', displayName:'Ano Novo', theme:'new-year', emoji:'🎆'},
-    {date:addDays(easter,-2), name:'Paixão de Cristo', displayName:'Paixão de Cristo', theme:'easter', emoji:'✝️'},
-    {date:new Date(year,3,21), name:'Tiradentes', displayName:'Tiradentes', theme:'tiradentes', emoji:'⚔️'},
-    {date:new Date(year,4,1), name:'Dia Mundial do Trabalho', displayName:'Dia do Trabalho', theme:'work', emoji:'🛠️'},
-    {date:new Date(year,8,7), name:'Independência do Brasil', displayName:'Independência do Brasil', theme:'independence', emoji:'🇧🇷'},
-    {date:new Date(year,9,12), name:'Nossa Senhora Aparecida', displayName:'Nossa Senhora Aparecida', theme:'aparecida', emoji:'🙏'},
-    {date:new Date(year,10,2), name:'Finados', displayName:'Finados', theme:'finados', emoji:'🕯️'},
-    {date:new Date(year,10,15), name:'Proclamação da República', displayName:'Proclamação da República', theme:'republic', emoji:'🇧🇷'},
-    {date:new Date(year,10,20), name:'Dia Nacional de Zumbi e da Consciência Negra', displayName:'Consciência Negra', theme:'consciencia-negra', emoji:'✊🏿'},
-    {date:new Date(year,11,25), name:'Natal', displayName:'Natal', theme:'christmas', emoji:'🎄'},
+    {date:new Date(year,0,1), name:'Confraternização Universal', displayName:'Ano Novo', theme:'new-year'},
+    {date:addDays(easter,-2), name:'Paixão de Cristo', displayName:'Paixão de Cristo', theme:'easter'},
+    {date:new Date(year,3,21), name:'Tiradentes', displayName:'Tiradentes', theme:'tiradentes'},
+    {date:new Date(year,4,1), name:'Dia Mundial do Trabalho', displayName:'Dia do Trabalho', theme:'work'},
+    {date:new Date(year,8,7), name:'Independência do Brasil', displayName:'Independência do Brasil', theme:'independence'},
+    {date:new Date(year,9,12), name:'Nossa Senhora Aparecida', displayName:'Nossa Senhora Aparecida', theme:'aparecida'},
+    {date:new Date(year,10,2), name:'Finados', displayName:'Finados', theme:'finados'},
+    {date:new Date(year,10,15), name:'Proclamação da República', displayName:'Proclamação da República', theme:'republic'},
+    {date:new Date(year,10,20), name:'Dia Nacional de Zumbi e da Consciência Negra', displayName:'Consciência Negra', theme:'consciencia-negra'},
+    {date:new Date(year,11,25), name:'Natal', displayName:'Natal', theme:'christmas'},
   ];
 };
 
@@ -427,15 +427,56 @@ function App() {
   </Box></ThemeProvider>
 }
 
+const IconStar = (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2l2.9 6.4L22 9.3l-5 4.9 1.2 7.1L12 17.8l-6.2 3.5L7 14.2 2 9.3l7.1-.9L12 2z"/></svg>;
+const IconSnowflake = (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" {...p}><path d="M12 2v20M4.2 6l15.6 12M4.2 18L19.8 6M2 12h20M7 4L5 6l2 2M17 4l2 2-2 2M7 20l-2-2 2-2M17 20l2-2-2-2"/></svg>;
+const IconCross = (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M10 2h4v7h7v4h-7v9h-4v-9H3V9h7z"/></svg>;
+const IconSword = (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M14 3l7 7-2 2-7-7zM19 8l2 2-9 9-3-1-1-3zM3 21l4-1"/></svg>;
+const IconGear = (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm9 3.2l-1.9-.3a7 7 0 00-.6-1.5l1.1-1.6-1.7-1.7-1.6 1.1a7 7 0 00-1.5-.6L14.5 3h-2.4l-.3 1.9a7 7 0 00-1.5.6L8.7 4.4 7 6.1l1.1 1.6a7 7 0 00-.6 1.5L5.6 9.5v2.4l1.9.3c.14.53.34 1.03.6 1.5l-1.1 1.6 1.7 1.7 1.6-1.1c.47.26.97.46 1.5.6l.3 1.9h2.4l.3-1.9c.53-.14 1.03-.34 1.5-.6l1.6 1.1 1.7-1.7-1.1-1.6c.26-.47.46-.97.6-1.5l1.9-.3V11.2z"/></svg>;
+const IconFlag = (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M5 21V4m0 0h13l-3 4 3 4H5"/></svg>;
+const IconSun = (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" {...p}><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>;
+const IconFlame = (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2c1 3-2 4-2 7a4 4 0 108 0c0-1.5-1-2.5-1-2.5.5 2-1 3-1 3 1-4-2-5-2-7.5-1 1-2 2.5-2 2.5s-.5-1.5 0-3z"/></svg>;
+const IconSpark = (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>;
+
+const HOLIDAY_ICON = {
+  'new-year': IconSpark, 'christmas': IconSnowflake, 'easter': IconCross, 'tiradentes': IconSword,
+  'work': IconGear, 'independence': IconFlag, 'aparecida': IconSun, 'finados': IconFlame,
+  'republic': IconStar, 'consciencia-negra': IconStar,
+};
+const HOLIDAY_EFFECT = {
+  'new-year': 'fireworks', 'christmas': 'snow', 'easter': 'rays', 'tiradentes': 'sparkle',
+  'work': 'sparkle', 'independence': 'confetti', 'aparecida': 'rays', 'finados': 'petals',
+  'republic': 'sparkle', 'consciencia-negra': 'confetti',
+};
+
+function HolidayFX({effect}) {
+  if (effect === 'snow') return <div className="holiday-fx fx-snow">{Array.from({length:7}).map((_,i)=>
+    <span key={i} className="snowflake" style={{left:`${(i*15+6)%100}%`, animationDelay:`${(i*0.5).toFixed(2)}s`, animationDuration:`${(3+(i%3)*0.7).toFixed(2)}s`}}/>)}</div>;
+  if (effect === 'fireworks') return <div className="holiday-fx fx-fireworks">{Array.from({length:3}).map((_,b)=>
+    <span key={b} className="burst" style={{left:`${22+b*28}%`, top:`${18+(b%2)*18}%`}}>
+      {Array.from({length:8}).map((_,s)=><i key={s} className="spark" style={{transform:`rotate(${s*45}deg)`, '--d':`${(b*0.55).toFixed(2)}s`}}/>)}
+    </span>)}</div>;
+  if (effect === 'petals') return <div className="holiday-fx fx-petals">{Array.from({length:6}).map((_,i)=>
+    <span key={i} className="petal" style={{left:`${(i*17+8)%100}%`, animationDelay:`${(i*0.6).toFixed(2)}s`, animationDuration:`${(4+(i%3)*0.8).toFixed(2)}s`}}/>)}</div>;
+  if (effect === 'confetti') return <div className="holiday-fx fx-confetti">{Array.from({length:7}).map((_,i)=>
+    <span key={i} className="piece" style={{left:`${(i*14+5)%100}%`, animationDelay:`${(i*0.4).toFixed(2)}s`, animationDuration:`${(3+(i%4)*0.5).toFixed(2)}s`}}/>)}</div>;
+  if (effect === 'rays') return <div className="holiday-fx fx-rays">{Array.from({length:8}).map((_,i)=>
+    <span key={i} className="ray" style={{transform:`translate(-50%,-100%) rotate(${i*45}deg)`, animationDelay:`${(i*0.2).toFixed(2)}s`}}/>)}</div>;
+  if (effect === 'sparkle') return <div className="holiday-fx fx-sparkle">{Array.from({length:6}).map((_,i)=>
+    <span key={i} className="twinkle" style={{left:`${12+((i*29)%76)}%`, top:`${10+((i*23)%70)}%`, animationDelay:`${(i*0.3).toFixed(2)}s`}}/>)}</div>;
+  return null;
+}
+
 function HolidayCard({holiday, compact=false, detail=false}) {
   if (!holiday) return null;
+  const Icon = HOLIDAY_ICON[holiday.theme] || IconStar;
   return <div className={`holiday-card holiday-${holiday.theme} ${compact?'holiday-compact':''} ${detail?'holiday-detail':''}`}>
     <div className="holiday-glow"/>
-    <div className="holiday-decor holiday-decor-left">{holiday.theme==='christmas'?'🎁':holiday.theme==='new-year'?'✨':holiday.theme==='finados'?'🌸':'★'}</div>
-    <div className="holiday-decor holiday-decor-right">{holiday.theme==='christmas'?'⭐':holiday.theme==='new-year'?'🎆':holiday.theme==='independence'?'🇧🇷':'✦'}</div>
+    <HolidayFX effect={HOLIDAY_EFFECT[holiday.theme]}/>
+    <span className="holiday-decor holiday-decor-left"><IconStar/></span>
+    <span className="holiday-decor holiday-decor-right"><IconSpark/></span>
     <div className="holiday-content">
       <span className="holiday-badge">FERIADO NACIONAL</span>
-      <span className="holiday-emoji">{holiday.emoji}</span>
+      <span className="holiday-icon"><Icon/></span>
       <strong>{holiday.displayName || holiday.name}</strong>
       {!compact&&<span className="holiday-official">{holiday.name}</span>}
       {detail&&<div className="holiday-rule"><span>✓</span> Não conta como dia de hora extra</div>}
